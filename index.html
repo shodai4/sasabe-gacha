@@ -100,7 +100,7 @@
                 <div>
                     <label for="modeSelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">モード選択</label>
                     <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 font-bold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
-                        <option value="budget">🛒 予算ギリギリ詰め合わせ</option>
+                        <option value="budget">🛒 予算ギリギリ詰め合わせ（最大99点）</option>
                         <option value="single">🎯 運試し！ぴったり単品狙い</option>
                         <option value="3items">✨ ちょうど3点チョイス</option>
                     </select>
@@ -111,17 +111,6 @@
                         <i data-lucide="sparkles" class="w-5 h-5"></i> 回す！
                     </button>
                 </div>
-            </div>
-
-            <!-- クイック予算プリセットチップ -->
-            <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
-                <span class="text-slate-400 font-bold mr-1">クイック予算:</span>
-                <button type="button" onclick="setBudget(3000)" class="px-2.5 py-1 bg-slate-100 hover:bg-[#2BB3A3]/20 hover:text-[#1F7068] text-slate-600 rounded-lg font-bold transition">3,000円</button>
-                <button type="button" onclick="setBudget(10000)" class="px-2.5 py-1 bg-slate-100 hover:bg-[#2BB3A3]/20 hover:text-[#1F7068] text-slate-600 rounded-lg font-bold transition">1万円</button>
-                <button type="button" onclick="setBudget(50000)" class="px-2.5 py-1 bg-slate-100 hover:bg-[#2BB3A3]/20 hover:text-[#1F7068] text-slate-600 rounded-lg font-bold transition">5万円</button>
-                <button type="button" onclick="setBudget(100000)" class="px-2.5 py-1 bg-slate-100 hover:bg-[#2BB3A3]/20 hover:text-[#1F7068] text-slate-600 rounded-lg font-bold transition">10万円</button>
-                <button type="button" onclick="setBudget(900000)" class="px-2.5 py-1 bg-[#F0A732]/15 hover:bg-[#F0A732]/30 text-[#D99222] border border-[#F0A732]/30 rounded-lg font-black transition">🔥 90万円（爆買い）</button>
-                <button type="button" onclick="setBudget(1000000)" class="px-2.5 py-1 bg-[#3BA29B]/15 hover:bg-[#3BA29B]/30 text-[#1F7068] border border-[#3BA29B]/30 rounded-lg font-black transition">👑 100万円（富豪）</button>
             </div>
         </div>
 
@@ -266,8 +255,8 @@
         const SUPABASE_ANON_KEY = 'あなたのSUPABASE_ANON_KEY';
 
         // キャッシュ管理用キー（1時間有効）
-        const CACHE_KEY = 'sasabe_products_cache_v3';
-        const CACHE_EXPIRE_KEY = 'sasabe_products_cache_expire_v3';
+        const CACHE_KEY = 'sasabe_products_cache_v4';
+        const CACHE_EXPIRE_KEY = 'sasabe_products_cache_expire_v4';
         const CACHE_TTL_MS = 60 * 60 * 1000; // 1時間
 
         let _supabase = null;
@@ -302,11 +291,6 @@
             return keywords.some(kw => target.includes(kw.toLowerCase()));
         }
 
-        function setBudget(amount) {
-            const input = document.getElementById('budgetInput');
-            input.value = amount;
-        }
-
         // XSS防止用エスケープ関数
         function escapeHtml(str) {
             if (!str) return '';
@@ -318,13 +302,17 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // 安全なリンク検証（笹部画材ドメインまたは相対パスのみ許可）
+        // 安全なリンク検証・整形（相対パスなら笹部画材ドメインを自動補完して各商品リンクへ確実に誘導）
         function sanitizeUrl(rawUrl) {
             if (!rawUrl) return '';
-            const u = String(rawUrl).trim();
+            let u = String(rawUrl).trim();
+            if (u.startsWith('//')) {
+                u = 'https:' + u;
+            } else if (!u.startsWith('http://') && !u.startsWith('https://')) {
+                u = 'https://www.sasabegazai.co.jp/' + u.replace(/^\/+/, '');
+            }
             if (u.startsWith('https://www.sasabegazai.co.jp/') || 
-                u.startsWith('http://www.sasabegazai.co.jp/') || 
-                u.startsWith('/')) {
+                u.startsWith('http://www.sasabegazai.co.jp/')) {
                 return escapeHtml(u);
             }
             return '';
@@ -350,11 +338,10 @@
                 console.warn('Cache read error:', e);
             }
 
-            // 2. Supabaseからの取得
+            // 2. Supabaseからの取得（urlカラムを確実に取得）
             if (_supabase) {
                 try {
                     countEl.innerText = 'Supabaseから取得中...';
-                    // 脆弱性対策・負荷対策：必要な列のみを指定
                     const { data, error } = await _supabase
                         .from('products')
                         .select('name, price, category, url')
@@ -380,34 +367,34 @@
                 }
             }
 
-            // 3. フォールバック（Supabase未設定時の高価格帯・全カテゴリ網羅サンプルデータ）
+            // 3. フォールバック（各商品固有の詳細ページURLを保持したデモ用サンプルデータ）
             if (items.length === 0) {
                 items = [
                     // 油絵具・用品
-                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン ヴェルネ 20ml コバルトブルー", price: 1980, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "クサカベ 油絵具 専門家用 110色 木箱デラックスセット", price: 78430, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン アーチスト油絵具 100色セット 木製トランク", price: 142000, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "シュミンケ ムッシーニ 最高級天然樹脂油絵具 特製木箱84色セット", price: 192500, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具", url: "https://www.sasabegazai.co.jp/pop.html?id=1000801&s=1" },
+                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具", url: "https://www.sasabegazai.co.jp/pop.html?id=1000802&s=1" },
+                    { name: "ホルベイン ヴェルネ 20ml コバルトブルー", price: 1980, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1107" },
+                    { name: "クサカベ 油絵具 専門家用 110色 木箱デラックスセット", price: 78430, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1119" },
+                    { name: "ホルベイン アーチスト油絵具 100色セット 木製トランク", price: 142000, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1119" },
+                    { name: "シュミンケ ムッシーニ 最高級天然樹脂油絵具 特製木箱84色セット", price: 192500, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1114" },
                     // 筆・ナイフ
-                    { name: "ナムラ 油彩筆 SK 8号 丸", price: 920, category: "筆", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "エスコダ 高級コリンスキーセーブル油彩筆 特製7本セット", price: 34500, category: "筆", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン ペインティングナイフ No.1", price: 1100, category: "ナイフ", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "ナムラ 油彩筆 SK 8号 丸", price: 920, category: "筆", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1603" },
+                    { name: "エスコダ 高級コリンスキーセーブル油彩筆 特製7本セット", price: 34500, category: "筆", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1601" },
+                    { name: "ホルベイン ペインティングナイフ No.1", price: 1100, category: "ナイフ", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1503" },
                     // 画用液・パレット
-                    { name: "クサカベ テレピン 55ml", price: 680, category: "画用液", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン オイルパレット 楕円型", price: 1980, category: "パレット", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "マツダ クイックオイルパレット 特大", price: 2850, category: "パレット", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "クサカベ テレピン 55ml", price: 680, category: "画用液", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1202" },
+                    { name: "ホルベイン オイルパレット 楕円型", price: 1980, category: "パレット", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1501" },
+                    { name: "マツダ クイックオイルパレット 特大", price: 2850, category: "パレット", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1501" },
                     // キャンバス・イーゼル
-                    { name: "クレサン 張りキャンバス F4号", price: 850, category: "キャンバス", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "クレサン 最高級麻張りキャンバス F100号", price: 18500, category: "キャンバス", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン アトリエイーゼル 38B 大型木製", price: 68200, category: "イーゼル", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "クレサン 張りキャンバス F4号", price: 850, category: "キャンバス", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1401" },
+                    { name: "クレサン 最高級麻張りキャンバス F100号", price: 18500, category: "キャンバス", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1401" },
+                    { name: "ホルベイン アトリエイーゼル 38B 大型木製", price: 68200, category: "イーゼル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1502" },
                     // 水彩・アクリル・紙・その他
-                    { name: "ホルベイン 透明水彩絵具 24色セット", price: 4620, category: "水彩", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "リキテックス プライム アクリル絵具 24色セット", price: 8250, category: "アクリル", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ウォーターフォード水彩紙 ホワイト ブロック 300g F8", price: 4950, category: "紙", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "カランダッシュ ネオパステル 96色木箱セット", price: 52800, category: "パステル", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "高級ゴールド油彩額縁 F30号 彫刻入り", price: 48900, category: "額縁", url: "https://www.sasabegazai.co.jp/" }
+                    { name: "ホルベイン 透明水彩絵具 24色セット", price: 4620, category: "水彩", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1801" },
+                    { name: "リキテックス プライム アクリル絵具 24色セット", price: 8250, category: "アクリル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1301" },
+                    { name: "ウォーターフォード水彩紙 ホワイト ブロック 300g F8", price: 4950, category: "紙", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1701" },
+                    { name: "カランダッシュ ネオパステル 96色木箱セット", price: 52800, category: "パステル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=2001" },
+                    { name: "高級ゴールド油彩額縁 F30号 彫刻入り", price: 48900, category: "額縁", url: "https://www.sasabegazai.co.jp/listview/item.html?id=2501" }
                 ];
                 countEl.innerText = `${items.length} (デモサンプルモード)`;
             }
@@ -480,7 +467,7 @@
         }
 
         // ==========================================
-        // ガチャ計算ロジック（カテゴリ絞り込み ＆ 90万円でも限界まで満額使い切る超精密アルゴリズム）
+        // ガチャ計算ロジック（最大99点対応 ＆ 予算ギリギリ満額購入アルゴリズム）
         // ==========================================
         function calculateResult(budget, mode, categoryKey) {
             if (!items || items.length === 0) return { items: [], notice: '' };
@@ -509,7 +496,7 @@
                 affordable.sort((a, b) => Number(b.price) - Number(a.price));
                 const maxPrice = Number(affordable[0].price);
 
-                // 予算が単品最高額の1.5倍を超える場合（例: 90万円入力時など）
+                // 予算が単品最高額の1.5倍を超える場合
                 if (budget >= maxPrice * 1.5) {
                     notice = `💡 単品の最高額商品（¥${maxPrice.toLocaleString()}）を選出しました。${budget.toLocaleString()}円を満額使い切るには「🛒 予算ギリギリ詰め合わせ」モードをお試しください！`;
                     return { items: [affordable[0]], notice };
@@ -564,33 +551,32 @@
                 return { items: affordable.slice(0, 3), notice };
             }
 
-            // 3. 予算ギリギリ詰め合わせ（3,000円から90万円・100万円超まで限界までおつり0円を狙う！）
+            // 3. 予算ギリギリ詰め合わせ（最大99点まで予算ギリギリおつり0円を目指して選定！）
             if (mode === 'budget') {
                 const affordable = pool.filter(i => Number(i.price) <= budget);
                 if (affordable.length === 0) return { items: [], notice };
 
-                // 予算規模に応じた最適選出点数の動的スケーリング（高額時は高単価品を中心に28〜38点程度に集約）
-                let maxItems;
-                if (budget <= 3000) maxItems = Math.min(affordable.length, Math.floor(Math.random() * 3) + 2); // 2~4点
-                else if (budget <= 10000) maxItems = Math.min(affordable.length, Math.floor(Math.random() * 4) + 4); // 4~7点
-                else if (budget <= 50000) maxItems = Math.min(affordable.length, Math.floor(Math.random() * 8) + 8); // 8~15点
-                else if (budget <= 100000) maxItems = Math.min(affordable.length, Math.floor(Math.random() * 8) + 14); // 14~21点
-                else if (budget <= 500000) maxItems = Math.min(affordable.length, Math.floor(Math.random() * 10) + 22); // 22~31点
-                else maxItems = Math.min(affordable.length, Math.floor(Math.random() * 12) + 28); // 28~39点（90万円〜100万円規模）
-
-                const avgTarget = budget / maxItems;
+                // 最大99点まで予算に合わせて詰め合わせ
+                const MAX_ITEMS = 99;
                 const selected = [];
                 let currentTotal = 0;
 
-                // 第1パス：予算規模にふさわしい単価のアイテムをランダムバイアスをかけて選定
-                const scored = [...affordable].sort((a, b) => {
-                    const scoreA = Math.abs(Number(a.price) - avgTarget) * (0.4 + Math.random() * 1.2);
-                    const scoreB = Math.abs(Number(b.price) - avgTarget) * (0.4 + Math.random() * 1.2);
-                    return scoreA - scoreB;
-                });
+                // 予算規模に応じて、高額予算の場合は平均ターゲット単価を意識して選定、通常予算はランダムシャッフル
+                let candidates;
+                if (budget >= 100000) {
+                    const targetAvg = budget / Math.min(MAX_ITEMS, Math.max(10, Math.floor(budget / 10000)));
+                    candidates = [...affordable].sort((a, b) => {
+                        const scoreA = Math.abs(Number(a.price) - targetAvg) * (0.4 + Math.random() * 1.2);
+                        const scoreB = Math.abs(Number(b.price) - targetAvg) * (0.4 + Math.random() * 1.2);
+                        return scoreA - scoreB;
+                    });
+                } else {
+                    candidates = [...affordable].sort(() => 0.5 - Math.random());
+                }
 
-                for (let it of scored) {
-                    if (selected.length >= maxItems) break;
+                // 第1パス：最大99点まで予算以内で選定
+                for (let it of candidates) {
+                    if (selected.length >= MAX_ITEMS) break;
                     const p = Number(it.price);
                     if (currentTotal + p <= budget) {
                         selected.push(it);
@@ -598,19 +584,20 @@
                     }
                 }
 
-                // 第2パス：隙間埋め（残り予算を最も大きい商品から貪欲に埋めておつり0円を徹底追求）
+                // 第2パス：隙間埋め（残り予算を最も大きい商品から貪欲に埋めて最大99点に達するまでおつり0円を徹底追求）
                 let remaining = budget - currentTotal;
-                if (remaining > 0) {
+                if (remaining > 0 && selected.length < MAX_ITEMS) {
                     const fillers = affordable
                         .filter(i => Number(i.price) <= remaining && !selected.some(s => s.name === i.name))
                         .sort((a, b) => Number(b.price) - Number(a.price));
 
                     for (let it of fillers) {
+                        if (selected.length >= MAX_ITEMS) break;
                         const p = Number(it.price);
                         if (currentTotal + p <= budget) {
                             selected.push(it);
                             currentTotal += p;
-                            if (budget - currentTotal <= 20) break; // 残り20円以下なら完了
+                            if (budget - currentTotal === 0) break;
                         }
                     }
                 }
@@ -621,7 +608,7 @@
             return { items: [], notice: '' };
         }
 
-        // 結果描画（安全なDOM生成・XSS対策）
+        // 結果描画（安全なDOM生成・XSS対策・DBの商品リンクへの直接遷移）
         function renderResult(selectedItems, budget, noticeText) {
             const resultContainer = document.getElementById('resultContainer');
             const itemList = document.getElementById('itemList');
