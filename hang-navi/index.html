@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搬入ナビ ｜ 画廊・展示壁面レイアウト＆釘位置シミュレーター</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans JP', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- ヘッダー -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1F7068] to-[#3BA29B] flex items-center justify-center text-white shadow-md">
+                    <i data-lucide="frame" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-slate-800 text-base md:text-lg flex items-center gap-2 leading-tight">
+                        搬入ナビ
+                        <span class="text-[10px] bg-[#3BA29B]/15 text-[#1F7068] font-bold px-2 py-0.5 rounded-full">v1.0 Prototype</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">画廊・個展・公募展の壁面配置＆釘打ち計算ツール</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="exportSheetImage()" class="bg-[#1F7068] hover:bg-[#16524C] text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm flex items-center gap-1.5 transition">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>設営指示書を保存</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1 flex flex-col gap-6">
+
+        <!-- コントロール部（壁設定 ＆ 作品追加） -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- 壁の設定 (4 cols) -->
+            <div class="lg:col-span-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col gap-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i data-lucide="ruler" class="w-4 h-4 text-[#3BA29B]"></i>
+                        画廊の壁面設定
+                    </h2>
+                    <span class="text-[11px] text-slate-400">ミリ単位 (mm)</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">壁の幅 (W)</label>
+                        <div class="relative">
+                            <input type="number" id="wallWidth" value="3600" step="50" min="500" max="20000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <span class="absolute right-3 top-2 text-xs text-slate-400">mm</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">壁の高さ (H)</label>
+                        <div class="relative">
+                            <input type="number" id="wallHeight" value="2400" step="50" min="1000" max="6000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <span class="absolute right-3 top-2 text-xs text-slate-400">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">目線中心の高さ</label>
+                        <div class="relative">
+                            <input type="number" id="eyeLevel" value="1400" step="10" min="1000" max="1800" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <span class="absolute right-3 top-2 text-xs text-slate-400">mm</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">※画廊標準: 1400〜1500mm</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">壁の色</label>
+                        <select id="wallColor" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-700 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <option value="#FFFFFF">純白 (White)</option>
+                            <option value="#F8F9FA" selected>展示用オフホワイト</option>
+                            <option value="#E2E8F0">ライトグレー</option>
+                            <option value="#334155">ダークモダン</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <span>配置モード:</span>
+                    <div class="flex gap-1.5">
+                        <button type="button" onclick="setLayoutMode('even')" id="btnModeEven" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-[#1F7068] text-white transition">均等割り</button>
+                        <button type="button" onclick="setLayoutMode('center')" id="btnModeCenter" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition">中央寄せ</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作品の追加フォーム (8 cols) -->
+            <div class="lg:col-span-8 bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between gap-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-[#3BA29B]"></i>
+                        作品を追加（F/P/M/S号数プリセット）
+                    </h2>
+                    <span class="text-xs font-semibold text-slate-500">現在の登録作品: <b id="artworkCountBadge" class="text-[#1F7068] font-black">0</b> 点</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">号数・規格</label>
+                        <select id="canvasPreset" onchange="onPresetChange()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <optgroup label="F規格 (Figure)">
+                                <option value="F0">F0 (180×140mm)</option>
+                                <option value="F3">F3 (273×220mm)</option>
+                                <option value="F4">F4 (333×242mm)</option>
+                                <option value="F6">F6 (410×318mm)</option>
+                                <option value="F8">F8 (455×380mm)</option>
+                                <option value="F10" selected>F10 (530×455mm)</option>
+                                <option value="F12">F12 (606×500mm)</option>
+                                <option value="F15">F15 (652×530mm)</option>
+                                <option value="F20">F20 (727×606mm)</option>
+                                <option value="F30">F30 (910×727mm)</option>
+                                <option value="F50">F50 (1167×910mm)</option>
+                            </optgroup>
+                            <optgroup label="S規格 (Square 正方形)">
+                                <option value="S0">S0 (180×180mm)</option>
+                                <option value="S3">S3 (273×273mm)</option>
+                                <option value="S4">S4 (333×333mm)</option>
+                                <option value="S6">S6 (410×410mm)</option>
+                                <option value="S10">S10 (530×530mm)</option>
+                            </optgroup>
+                            <optgroup label="P規格 (Paysage 風景)">
+                                <option value="P6">P6 (410×273mm)</option>
+                                <option value="P8">P8 (455×333mm)</option>
+                                <option value="P10">P10 (530×410mm)</option>
+                            </optgroup>
+                            <optgroup label="M規格 (Marine 海景)">
+                                <option value="M10">M10 (530×333mm)</option>
+                            </optgroup>
+                            <option value="custom">📐 カスタム手入力 (mm)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">向き</label>
+                        <select id="canvasOrientation" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <option value="vertical">縦長 (Portrait)</option>
+                            <option value="horizontal">横長 (Landscape)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">作品タイトル (任意)</label>
+                        <input type="text" id="artworkTitle" placeholder="無題 / 作品名" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-medium text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">額縁マージン (片側)</label>
+                        <div class="relative">
+                            <input type="number" id="framePadding" value="0" min="0" max="150" step="5" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-800 text-sm focus:ring-2 focus:ring-[#3BA29B] focus:outline-none">
+                            <span class="absolute right-3 top-2 text-xs text-slate-400">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <span class="text-xs text-slate-400">※ドラッグまたは左右ボタンでいつでも並べ替え可能です</span>
+                    <button onclick="addArtwork()" class="bg-[#F0A732] hover:bg-[#D99222] text-white font-black text-sm px-5 py-2.5 rounded-xl shadow-md shadow-amber-500/20 flex items-center gap-2 transition active:scale-95">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>作品を壁に追加</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 壁面ビジュアルプレビュー (Canvas) -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col gap-3">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center gap-2">
+                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                        <i data-lucide="layout" class="w-4 h-4 text-[#3BA29B]"></i>
+                        展示壁面シミュレーション
+                    </h2>
+                    <span id="wallSummaryText" class="text-xs text-slate-500 font-medium"></span>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1.5 text-slate-500">
+                        <span class="w-3 h-0.5 border-t border-dashed border-red-500 inline-block"></span>
+                        赤点線: 目線中心 (<span id="eyeLevelDisplay">1,400</span>mm)
+                    </span>
+                    <button onclick="clearAllArtworks()" class="text-slate-400 hover:text-red-600 font-medium transition text-xs">すべてクリア</button>
+                </div>
+            </div>
+
+            <!-- Canvas 描画エリア -->
+            <div class="w-full bg-slate-100 rounded-xl p-3 overflow-x-auto flex justify-center items-center">
+                <canvas id="wallCanvas" width="1100" height="550" class="rounded-lg shadow-inner max-w-full h-auto border border-slate-300"></canvas>
+            </div>
+            
+            <p class="text-[11px] text-slate-400 text-center">※絵の下の「◀」「▶」ボタン、または下のリストで左右の配置順序を瞬時に入れ替えできます。</p>
+        </div>
+
+        <!-- 登録作品リスト ＆ 設営データテーブル -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col gap-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-[#3BA29B]"></i>
+                    搬入・釘打ち寸法データ（現場指示書）
+                </h3>
+                <span class="text-xs text-slate-400">左端から順番に並んでいます</span>
+            </div>
+
+            <!-- 一覧テーブル -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                        <tr>
+                            <th class="py-2.5 px-3 w-12 text-center">順番</th>
+                            <th class="py-2.5 px-3">作品名</th>
+                            <th class="py-2.5 px-3">号数・寸法 (W×H)</th>
+                            <th class="py-2.5 px-3 text-right">左壁端からの中心</th>
+                            <th class="py-2.5 px-3 text-right">床からの中心高</th>
+                            <th class="py-2.5 px-3 text-right">左隣との間隔</th>
+                            <th class="py-2.5 px-3 text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="artworkTableBody" class="divide-y divide-slate-100">
+                        <!-- JSで動的生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        <p>搬入ナビ ｜ 画家・クリエイターのための展示設営シミュレーター 🎨 Created for Artists</p>
+    </footer>
+
+    <!-- アプリケーションロジック -->
+    <script>
+        // 日本のキャンバス規格寸法表 (幅 × 高さ mm)
+        const CANVAS_SIZES = {
+            F0: [180, 140], F3: [273, 220], F4: [333, 242], F6: [410, 318],
+            F8: [455, 380], F10: [530, 455], F12: [606, 500], F15: [652, 530],
+            F20: [727, 606], F30: [910, 727], F50: [1167, 910],
+            S0: [180, 180], S3: [273, 273], S4: [333, 333], S6: [410, 410],
+            S10: [530, 530],
+            P6: [410, 273], P8: [455, 333], P10: [530, 410],
+            M10: [530, 333]
+        };
+
+        // 作品データ配列
+        let artworks = [
+            { id: 1, title: "青の習作", preset: "F10", width: 455, height: 530, padding: 0, color: "#2B6CB0" },
+            { id: 2, title: "夜想曲", preset: "F6", width: 318, height: 410, padding: 0, color: "#1F7068" },
+            { id: 3, title: "風景 (光)", preset: "F8", width: 455, height: 380, padding: 0, color: "#D69E2E" }
+        ];
+
+        let layoutMode = 'even'; // 'even' (均等割り) or 'center' (中央寄せ)
+        let nextId = 4;
+
+        const PALETTE = ["#2B6CB0", "#1F7068", "#D69E2E", "#C53030", "#6B46C1", "#319795", "#DD6B20"];
+
+        function setLayoutMode(mode) {
+            layoutMode = mode;
+            document.getElementById('btnModeEven').className = mode === 'even' ? 
+                'px-2.5 py-1 rounded-lg font-bold text-xs bg-[#1F7068] text-white transition' : 
+                'px-2.5 py-1 rounded-lg font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            document.getElementById('btnModeCenter').className = mode === 'center' ? 
+                'px-2.5 py-1 rounded-lg font-bold text-xs bg-[#1F7068] text-white transition' : 
+                'px-2.5 py-1 rounded-lg font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            render();
+        }
+
+        function onPresetChange() {
+            // 将来的なカスタム入力トグル用
+        }
+
+        function addArtwork() {
+            const preset = document.getElementById('canvasPreset').value;
+            const orientation = document.getElementById('canvasOrientation').value;
+            const titleInput = document.getElementById('artworkTitle');
+            const padding = parseInt(document.getElementById('framePadding').value, 10) || 0;
+
+            let w, h;
+            if (preset === 'custom') {
+                w = 400; h = 400;
+            } else {
+                const spec = CANVAS_SIZES[preset] || [400, 300];
+                if (orientation === 'vertical') {
+                    w = Math.min(spec[0], spec[1]);
+                    h = Math.max(spec[0], spec[1]);
+                } else {
+                    w = Math.max(spec[0], spec[1]);
+                    h = Math.min(spec[0], spec[1]);
+                }
+            }
+
+            const title = titleInput.value.trim() || `作品 ${artworks.length + 1}`;
+            const color = PALETTE[artworks.length % PALETTE.length];
+
+            artworks.push({
+                id: nextId++,
+                title: title,
+                preset: preset,
+                width: w + (padding * 2),
+                height: h + (padding * 2),
+                padding: padding,
+                color: color
+            });
+
+            titleInput.value = '';
+            render();
+        }
+
+        function removeArtwork(id) {
+            artworks = artworks.filter(a => a.id !== id);
+            render();
+        }
+
+        function moveArtwork(index, direction) {
+            const target = index + direction;
+            if (target < 0 || target >= artworks.length) return;
+            const temp = artworks[index];
+            artworks[index] = artworks[target];
+            artworks[target] = temp;
+            render();
+        }
+
+        function clearAllArtworks() {
+            if (confirm("登録した作品をすべてクリアしますか？")) {
+                artworks = [];
+                render();
+            }
+        }
+
+        // 計算ロジック：各作品の X, Y (中心座標 mm) および間隔を算出
+        function calculatePositions() {
+            const wallW = parseFloat(document.getElementById('wallWidth').value) || 3600;
+            const wallH = parseFloat(document.getElementById('wallHeight').value) || 2400;
+            const eyeLevel = parseFloat(document.getElementById('eyeLevel').value) || 1400;
+
+            if (artworks.length === 0) return { positions: [], gap: 0, wallW, wallH, eyeLevel };
+
+            const totalArtWidth = artworks.reduce((sum, a) => sum + a.width, 0);
+            const remaining = wallW - totalArtWidth;
+
+            let gap = 0;
+            let startX = 0;
+
+            if (layoutMode === 'even') {
+                // 左右両端および作品間すべて均等
+                gap = remaining / (artworks.length + 1);
+                startX = gap;
+            } else {
+                // 固定間隔で中央寄せ
+                gap = 200; // 200mm
+                const span = totalArtWidth + gap * (artworks.length - 1);
+                startX = Math.max(0, (wallW - span) / 2);
+            }
+
+            let curX = startX;
+            const positions = artworks.map((art, idx) => {
+                const centerX = curX + (art.width / 2);
+                const prevX = curX;
+                curX += art.width + gap;
+                return {
+                    centerX: Math.round(centerX),
+                    centerY: Math.round(eyeLevel),
+                    width: art.width,
+                    height: art.height,
+                    left: Math.round(prevX),
+                    gapBefore: idx === 0 ? Math.round(startX) : Math.round(gap)
+                };
+            });
+
+            return { positions, gap: Math.round(gap), wallW, wallH, eyeLevel, totalArtWidth };
+        }
+
+        // 描画 ＆ テーブル更新
+        function render() {
+            const data = calculatePositions();
+            const { positions, gap, wallW, wallH, eyeLevel, totalArtWidth } = data;
+
+            document.getElementById('artworkCountBadge').innerText = artworks.length;
+            document.getElementById('eyeLevelDisplay').innerText = eyeLevel.toLocaleString();
+            
+            const summaryEl = document.getElementById('wallSummaryText');
+            if (artworks.length > 0) {
+                const rem = wallW - totalArtWidth;
+                summaryEl.innerText = `壁幅 ${wallW}mm ｜ 作品合計 ${totalArtWidth}mm ｜ 残り余白 ${rem}mm (${layoutMode === 'even' ? '均等割間隔: ' + gap + 'mm' : '中央寄せ'})`;
+                if (rem < 0) {
+                    summaryEl.innerHTML += ` <span class="text-red-500 font-bold">⚠️ 壁幅を ${Math.abs(rem)}mm 超過しています！</span>`;
+                }
+            } else {
+                summaryEl.innerText = `壁幅 ${wallW}mm × 高さ ${wallH}mm`;
+            }
+
+            // Canvas 描画
+            drawCanvas(data);
+
+            // テーブル更新
+            renderTable(positions);
+
+            lucide.createIcons();
+        }
+
+        function drawCanvas(data) {
+            const canvas = document.getElementById('wallCanvas');
+            const ctx = canvas.getContext('2d');
+            const { positions, wallW, wallH, eyeLevel } = data;
+
+            const wallColor = document.getElementById('wallColor').value;
+
+            // スケール計算（キャンバスサイズに壁を綺麗に収める）
+            const padding = 30;
+            const availW = canvas.width - (padding * 2);
+            const availH = canvas.height - (padding * 2);
+            const scale = Math.min(availW / wallW, availH / wallH);
+
+            const drawWallW = wallW * scale;
+            const drawWallH = wallH * scale;
+            const offsetX = padding + (availW - drawWallW) / 2;
+            const offsetY = padding + (availH - drawWallH) / 2;
+
+            // 背景クリア
+            ctx.fillStyle = "#E2E8F0";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 壁面
+            ctx.fillStyle = wallColor;
+            ctx.fillRect(offsetX, offsetY, drawWallW, drawWallH);
+            ctx.strokeStyle = "#94A3B8";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(offsetX, offsetY, drawWallW, drawWallH);
+
+            // 床ライン（壁下部）
+            ctx.strokeStyle = "#475569";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(offsetX - 10, offsetY + drawWallH);
+            ctx.lineTo(offsetX + drawWallW + 10, offsetY + drawWallH);
+            ctx.stroke();
+
+            // 目線ライン（赤点線：床から eyeLevel mm）
+            const eyeY = offsetY + drawWallH - (eyeLevel * scale);
+            ctx.strokeStyle = "#EF4444";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(offsetX, eyeY);
+            ctx.lineTo(offsetX + drawWallW, eyeY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 目線ラベル
+            ctx.fillStyle = "#EF4444";
+            ctx.font = "bold 10px sans-serif";
+            ctx.fillText(`目線中心: ${eyeLevel}mm`, offsetX + 8, eyeY - 4);
+
+            // 作品の描画
+            artworks.forEach((art, idx) => {
+                const pos = positions[idx];
+                if (!pos) return;
+
+                const artDrawW = art.width * scale;
+                const artDrawH = art.height * scale;
+                const artX = offsetX + (pos.centerX * scale) - (artDrawW / 2);
+                const artY = offsetY + drawWallH - (pos.centerY * scale) - (artDrawH / 2);
+
+                // ドロップシャドウ
+                ctx.fillStyle = "rgba(0,0,0,0.12)";
+                ctx.fillRect(artX + 3, artY + 3, artDrawW, artDrawH);
+
+                // キャンバス本体
+                ctx.fillStyle = art.color;
+                ctx.fillRect(artX, artY, artDrawW, artDrawH);
+                ctx.strokeStyle = "#1E293B";
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(artX, artY, artDrawW, artDrawH);
+
+                // 作品情報テキスト
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "bold 11px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(art.title, artX + (artDrawW / 2), artY + (artDrawH / 2) - 4);
+
+                ctx.font = "9px sans-serif";
+                ctx.fillStyle = "rgba(255,255,255,0.85)";
+                ctx.fillText(`${art.preset} (${art.width}×${art.height})`, artX + (artDrawW / 2), artY + (artDrawH / 2) + 12);
+
+                // 順番バッジ
+                ctx.fillStyle = "#F0A732";
+                ctx.beginPath();
+                ctx.arc(artX + 12, artY + 12, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.font = "bold 9px sans-serif";
+                ctx.fillText(`${idx + 1}`, artX + 12, artY + 15);
+
+                // 左右間隔寸法線
+                if (idx === 0) {
+                    drawDimension(ctx, offsetX, artX, artY + artDrawH + 15, `${pos.left}mm`);
+                } else {
+                    const prevPos = positions[idx - 1];
+                    const prevArt = artworks[idx - 1];
+                    const prevX2 = offsetX + (prevPos.centerX * scale) + (prevArt.width * scale / 2);
+                    drawDimension(ctx, prevX2, artX, artY + artDrawH + 15, `${pos.gapBefore}mm`);
+                }
+            });
+
+            ctx.textAlign = "left";
+        }
+
+        // 寸法線ヘルパー
+        function drawDimension(ctx, x1, x2, y, text) {
+            if (x2 <= x1 + 2) return;
+            ctx.strokeStyle = "#64748B";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x2, y);
+            ctx.moveTo(x1, y - 3); ctx.lineTo(x1, y + 3);
+            ctx.moveTo(x2, y - 3); ctx.lineTo(x2, y + 3);
+            ctx.stroke();
+
+            ctx.fillStyle = "#475569";
+            ctx.font = "9px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(text, (x1 + x2) / 2, y - 4);
+        }
+
+        function renderTable(positions) {
+            const tbody = document.getElementById('artworkTableBody');
+            tbody.innerHTML = '';
+
+            if (artworks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">上のフォームから作品を追加してください。</td></tr>`;
+                return;
+            }
+
+            artworks.forEach((art, idx) => {
+                const pos = positions[idx] || { centerX: 0, centerY: 0, gapBefore: 0 };
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-3 text-center">
+                        <span class="w-6 h-6 rounded-full bg-[#1F7068] text-white font-bold text-xs inline-flex items-center justify-center">${idx + 1}</span>
+                    </td>
+                    <td class="py-3 px-3 font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full" style="background:${art.color}"></span>
+                        ${art.title}
+                    </td>
+                    <td class="py-3 px-3 text-slate-600 font-mono">
+                        <span class="font-bold text-slate-800">${art.preset}</span> (${art.width}×${art.height}mm)
+                    </td>
+                    <td class="py-3 px-3 text-right font-black text-[#1F7068] text-sm font-mono">
+                        ${pos.centerX.toLocaleString()} mm
+                    </td>
+                    <td class="py-3 px-3 text-right font-black text-slate-700 font-mono">
+                        ${pos.centerY.toLocaleString()} mm
+                    </td>
+                    <td class="py-3 px-3 text-right font-semibold text-slate-500 font-mono">
+                        ${idx === 0 ? `壁左端より ${pos.left}mm` : `${pos.gapBefore}mm`}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <div class="inline-flex items-center gap-1">
+                            <button onclick="moveArtwork(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-800 disabled:opacity-20 transition" title="左へ移動">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="moveArtwork(${idx}, 1)" ${idx === artworks.length - 1 ? 'disabled' : ''} class="p-1 text-slate-400 hover:text-slate-800 disabled:opacity-20 transition" title="右へ移動">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="removeArtwork(${art.id})" class="p-1 text-slate-300 hover:text-red-500 ml-1 transition" title="削除">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 設営指示書（PNG画像）の書き出し
+        function exportSheetImage() {
+            const canvas = document.getElementById('wallCanvas');
+            const link = document.createElement('a');
+            link.download = `展示搬入指示書_${new Date().toISOString().slice(0, 10)}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // イベント設定
+        ['wallWidth', 'wallHeight', 'eyeLevel', 'wallColor'].forEach(id => {
+            document.getElementById(id).addEventListener('input', render);
+        });
+
+        window.addEventListener('load', () => {
+            render();
+        });
+    </script>
+</body>
+</html>

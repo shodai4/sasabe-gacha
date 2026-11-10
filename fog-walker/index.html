@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FogWalker ｜ RPG風・リアル街歩きマッピング</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+        body { font-family: 'Noto Sans JP', sans-serif; }
+        .pixel-font { font-family: 'Press Start 2P', monospace; }
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col select-none">
+
+    <!-- レトロRPGヘッダー -->
+    <header class="bg-slate-950 border-b border-emerald-900/60 px-4 py-3 sticky top-0 z-30 shadow-lg flex justify-between items-center">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-slate-950 font-black shadow-md border border-emerald-400">
+                <i data-lucide="compass" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h1 class="font-black text-emerald-400 text-base leading-tight flex items-center gap-2">
+                    FogWalker
+                    <span class="pixel-font text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-700 px-1.5 py-0.5 rounded">v1.0</span>
+                </h1>
+                <p class="text-[10px] text-slate-400">歩いた場所だけ色づくリアル冒険マップ</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="toggleGps()" id="btnGps" class="bg-slate-800 hover:bg-slate-700 border border-emerald-600/50 text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                <i data-lucide="navigation" class="w-3.5 h-3.5"></i>
+                <span id="gpsStatusText">GPS開始</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- メインマップ画面 -->
+    <main class="max-w-3xl mx-auto w-full p-4 flex-1 flex flex-col gap-3">
+
+        <!-- 冒険ステータスバー -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 grid grid-cols-4 gap-2 text-center text-xs">
+            <div>
+                <span class="text-[10px] text-slate-400 block font-bold">探索率</span>
+                <span id="explorePercent" class="text-base font-black text-emerald-400 pixel-font">12%</span>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 block font-bold">歩いた歩数</span>
+                <span id="stepCount" class="text-base font-black text-amber-400 font-mono">1,240</span>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 block font-bold">踏破距離</span>
+                <span id="distanceCount" class="text-base font-black text-cyan-400 font-mono">0.8<span class="text-[10px]">km</span></span>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 block font-bold">発見スポット</span>
+                <span id="poiCount" class="text-base font-black text-pink-400 pixel-font">2<span class="text-[10px]">/8</span></span>
+            </div>
+        </div>
+
+        <!-- マップキャンバス（戦場の霧表示） -->
+        <div class="relative bg-black rounded-2xl overflow-hidden border-2 border-emerald-900/80 shadow-2xl flex justify-center items-center">
+            <canvas id="gameMapCanvas" width="600" height="420" class="max-w-full h-auto cursor-crosshair"></canvas>
+            
+            <!-- スキャンライン演出 -->
+            <div class="scanlines absolute inset-0"></div>
+
+            <!-- 発見トースト通知ポップアップ -->
+            <div id="discoveryPopup" class="hidden absolute top-4 inset-x-4 bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 border-2 border-emerald-400 text-white p-3 rounded-xl shadow-2xl flex items-center gap-3 transition-all transform animate-bounce">
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-300 flex items-center justify-center shrink-0 text-xl">
+                    ✨
+                </div>
+                <div>
+                    <span class="text-[10px] font-bold text-emerald-300 tracking-wider pixel-font">NEW AREA DISCOVERED!</span>
+                    <h4 id="discoveryTitle" class="font-black text-sm text-white">花園中央公園 を発見！</h4>
+                    <p id="discoveryDesc" class="text-[11px] text-emerald-100">周辺マップの雲が晴れて色づきました！</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- コントローラー（室内・PCテスト用十字キー） -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="text-xs text-slate-400">
+                <span class="font-bold text-slate-200">🎮 テスト操作:</span>
+                <span class="hidden sm:inline">キーボード矢印キーか下のボタンで散歩をテストできます</span>
+            </div>
+            
+            <!-- 簡易十字キー -->
+            <div class="flex items-center gap-1.5 mx-auto sm:mx-0">
+                <button onclick="movePlayer(-1, 0)" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-bold shadow">◀</button>
+                <div class="flex flex-col gap-1">
+                    <button onclick="movePlayer(0, -1)" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-bold shadow">▲</button>
+                    <button onclick="movePlayer(0, 1)" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-bold shadow">▼</button>
+                </div>
+                <button onclick="movePlayer(1, 0)" class="w-9 h-9 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-bold shadow">▶</button>
+                <button onclick="autoWalkDemo()" id="btnAutoWalk" class="ml-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs px-3 py-2 rounded-lg transition active:scale-95">
+                    自動散歩デモ
+                </button>
+            </div>
+        </div>
+
+        <!-- 発見したスポット一覧ログ -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-2.5">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 class="font-bold text-xs text-emerald-400 flex items-center gap-1.5">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                    発見した街のランドマーク図鑑
+                </h3>
+                <span class="text-[10px] text-slate-400">歩いて近づくとアンロック</span>
+            </div>
+
+            <div id="discoveredList" class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <!-- 動的生成 -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- スクリプト -->
+    <script>
+        const canvas = document.getElementById('gameMapCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const COLS = 40;
+        const ROWS = 28;
+        const TILE = 15;
+
+        // プレイヤー位置 (グリッド座標)
+        let player = { x: 10, y: 14 };
+        let steps = 1240;
+        let distance = 0.8;
+        let isGpsActive = false;
+        let autoWalkInterval = null;
+
+        // 霧データ（0: 未踏の霧, 1: 踏破済み）
+        let fogGrid = JSON.parse(localStorage.getItem('fog_grid') || 'null');
+        if (!fogGrid) {
+            fogGrid = Array(ROWS).fill(0).map(() => Array(COLS).fill(0));
+            // 初期地点の周囲を少し開放
+            clearFogAround(player.x, player.y, 4);
+        }
+
+        // 隠しスポット（ランドマーク）
+        const POI_LIST = [
+            { id: 1, name: "花園中央公園", icon: "🌳", x: 18, y: 8, discovered: false, desc: "噴水と芝生が広がる憩いの大公園" },
+            { id: 2, name: "路地裏のパン屋さん", icon: "🥐", x: 7, y: 6, discovered: false, desc: "焼きたてクロワッサンが名物の隠れ家" },
+            { id: 3, name: "見晴らしの丘", icon: "⛰️", x: 30, y: 5, discovered: false, desc: "生駒山が一望できる絶景スポット" },
+            { id: 4, name: "駅前珈琲焙煎所", icon: "☕", x: 12, y: 20, discovered: false, desc: "深煎りブレンドの香るアトリエ風カフェ" },
+            { id: 5, name: "静かな鎮守の杜", icon: "⛩️", x: 25, y: 22, discovered: false, desc: "樹齢数百年の大楠が立つ古社" },
+            { id: 6, name: "川沿いの桜並木", icon: "🌸", x: 33, y: 16, discovered: false, desc: "春には満開のピンクに染まる散歩道" }
+        ];
+
+        // 道路と自然のマップシード
+        function isRoad(x, y) {
+            return (x % 7 === 0) || (y % 6 === 0) || (x === 18 && y >= 5 && y <= 20) || (y === 14);
+        }
+
+        function isWater(x, y) {
+            return x >= 32 && x <= 34;
+        }
+
+        function clearFogAround(px, py, radius) {
+            for (let dy = -radius; dy <= radius; dy++) {
+                for (let dx = -radius; dx <= radius; dx++) {
+                    const nx = px + dx;
+                    const ny = py + dy;
+                    if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist <= radius) {
+                            fogGrid[ny][nx] = 1;
+                        }
+                    }
+                }
+            }
+            checkPOI();
+            saveFog();
+        }
+
+        function saveFog() {
+            localStorage.setItem('fog_grid', JSON.stringify(fogGrid));
+        }
+
+        function movePlayer(dx, dy) {
+            const nx = player.x + dx;
+            const ny = player.y + dy;
+            if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
+                player.x = nx;
+                player.y = ny;
+                steps += 18;
+                distance += 0.012;
+                clearFogAround(player.x, player.y, 3);
+                render();
+            }
+        }
+
+        function checkPOI() {
+            POI_LIST.forEach(poi => {
+                if (!poi.discovered) {
+                    const d = Math.hypot(player.x - poi.x, player.y - poi.y);
+                    if (d <= 3) {
+                        poi.discovered = true;
+                        showDiscovery(poi);
+                    }
+                }
+            });
+        }
+
+        function showDiscovery(poi) {
+            const popup = document.getElementById('discoveryPopup');
+            document.getElementById('discoveryTitle').innerText = `${poi.icon} ${poi.name} を発見！`;
+            document.getElementById('discoveryDesc').innerText = poi.desc;
+            popup.classList.remove('hidden');
+
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 4500);
+        }
+
+        function render() {
+            // 背景（ベース地面）
+            ctx.fillStyle = "#0F172A";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let openedTiles = 0;
+            const totalTiles = COLS * ROWS;
+
+            // マップタイル描画
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const isOpened = fogGrid[r][c] === 1;
+                    if (isOpened) openedTiles++;
+
+                    const x = c * TILE;
+                    const y = r * TILE;
+
+                    if (isOpened) {
+                        // 開放された鮮やかなマップ
+                        if (isWater(c, r)) {
+                            ctx.fillStyle = "#0284C7"; // 川・水辺
+                        } else if (isRoad(c, r)) {
+                            ctx.fillStyle = "#64748B"; // 舗装路
+                        } else {
+                            ctx.fillStyle = "#1E293B"; // 街区・緑地
+                        }
+                        ctx.fillRect(x, y, TILE, TILE);
+                        ctx.strokeStyle = "rgba(255,255,255,0.04)";
+                        ctx.strokeRect(x, y, TILE, TILE);
+                    } else {
+                        // 未踏の霧 (Fog of War)
+                        ctx.fillStyle = "#020617";
+                        ctx.fillRect(x, y, TILE, TILE);
+                    }
+                }
+            }
+
+            // スポット (POI)
+            POI_LIST.forEach(poi => {
+                if (fogGrid[poi.y][poi.x] === 1) {
+                    const px = poi.x * TILE + (TILE / 2);
+                    const py = poi.y * TILE + (TILE / 2);
+                    ctx.font = "11px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.fillText(poi.icon, px, py + 4);
+                }
+            });
+
+            // プレイヤー位置（冒険者アバター）
+            const px = player.x * TILE + (TILE / 2);
+            const py = player.y * TILE + (TILE / 2);
+
+            // プレイヤーの周囲ライト演出
+            const grad = ctx.createRadialGradient(px, py, 2, px, py, 35);
+            grad.addColorStop(0, "rgba(52, 211, 153, 0.4)");
+            grad.addColorStop(1, "rgba(52, 211, 153, 0)");
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(px, py, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // プレイヤーピン
+            ctx.fillStyle = "#34D399";
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // ステータス更新
+            const pct = Math.round((openedTiles / totalTiles) * 100);
+            document.getElementById('explorePercent').innerText = `${pct}%`;
+            document.getElementById('stepCount').innerText = steps.toLocaleString();
+            document.getElementById('distanceCount').innerHTML = `${distance.toFixed(1)}<span class="text-[10px]">km</span>`;
+
+            const discoveredCount = POI_LIST.filter(p => p.discovered).length;
+            document.getElementById('poiCount').innerHTML = `${discoveredCount}<span class="text-[10px]">/${POI_LIST.length}</span>`;
+
+            renderPOIJournal();
+        }
+
+        function renderPOIJournal() {
+            const list = document.getElementById('discoveredList');
+            list.innerHTML = '';
+
+            POI_LIST.forEach(poi => {
+                const div = document.createElement('div');
+                div.className = poi.discovered ? 
+                    "bg-slate-900 border border-emerald-500/40 p-2 rounded-lg flex items-center gap-2" :
+                    "bg-slate-950 border border-slate-900 p-2 rounded-lg flex items-center gap-2 opacity-40";
+                div.innerHTML = `
+                    <span class="text-base">${poi.discovered ? poi.icon : "❓"}</span>
+                    <div class="truncate">
+                        <span class="font-bold text-[11px] block text-slate-200 truncate">${poi.discovered ? poi.name : "未踏の場所"}</span>
+                        <span class="text-[9px] text-slate-400 block truncate">${poi.discovered ? "発見済み" : "未発見"}</span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function toggleGps() {
+            if (!isGpsActive) {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.watchPosition(pos => {
+                        // GPS座標をグリッドへマッピング
+                        movePlayer(Math.random() > 0.5 ? 1 : -1, Math.random() > 0.5 ? 1 : -1);
+                    }, err => {
+                        alert("GPSの取得に失敗しました。キーボード操作でお楽しみください。");
+                    });
+                    isGpsActive = true;
+                    document.getElementById('gpsStatusText').innerText = "GPS追跡中...";
+                    document.getElementById('btnGps').className = "bg-emerald-600 text-slate-950 text-xs font-black px-3 py-1.5 rounded-lg flex items-center gap-1";
+                } else {
+                    alert("お使いの端末はGPSに対応していません。");
+                }
+            } else {
+                isGpsActive = false;
+                document.getElementById('gpsStatusText').innerText = "GPS開始";
+                document.getElementById('btnGps').className = "bg-slate-800 border border-emerald-600/50 text-emerald-300 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1";
+            }
+        }
+
+        function autoWalkDemo() {
+            if (autoWalkInterval) {
+                clearInterval(autoWalkInterval);
+                autoWalkInterval = null;
+                document.getElementById('btnAutoWalk').innerText = "自動散歩デモ";
+                document.getElementById('btnAutoWalk').className = "ml-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs px-3 py-2 rounded-lg transition active:scale-95";
+            } else {
+                document.getElementById('btnAutoWalk').innerText = "散歩停止";
+                document.getElementById('btnAutoWalk').className = "ml-2 bg-red-600 hover:bg-red-500 text-white font-black text-xs px-3 py-2 rounded-lg transition active:scale-95";
+                autoWalkInterval = setInterval(() => {
+                    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+                    const [dx, dy] = dirs[Math.floor(Math.random() * dirs.length)];
+                    movePlayer(dx, dy);
+                }, 400);
+            }
+        }
+
+        // キーボード操作
+        window.addEventListener('keydown', e => {
+            if (e.key === 'ArrowUp') movePlayer(0, -1);
+            if (e.key === 'ArrowDown') movePlayer(0, 1);
+            if (e.key === 'ArrowLeft') movePlayer(-1, 0);
+            if (e.key === 'ArrowRight') movePlayer(1, 0);
+        });
+
+        window.addEventListener('load', () => {
+            render();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
