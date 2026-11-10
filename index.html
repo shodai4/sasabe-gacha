@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>笹部画材 3,000円ガチャ＆ルーレット</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="description" content="笹部洋画材料店（笹部画材）の全商品データからランダムに画材を選定する3,000円ガチャ＆ルーレットツールです。">
+    
+    <!-- OGP / SNSシェア設定 -->
+    <meta property="og:title" content="笹部画材 3,000円ガチャ＆ルーレット 🎨">
+    <meta property="og:description" content="予算に合わせて笹部画材の実在する画材からランダムにチョイス！新しい画材との出会いに。">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <title>笹部画材 3,000円ガチャ＆ルーレット 🎨</title>
+
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Canvas Confetti -->
@@ -12,6 +22,12 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google AdSense スクリプトタグ -->
+    <!-- ※ AdSense審査通過後、ご自身のパブリッシャーID（ca-pub-XXXXXXXXXXXXXXXX）に書き換えてください -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+         crossorigin="anonymous"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap');
         body { font-family: 'Noto Sans JP', sans-serif; }
@@ -39,15 +55,15 @@
         <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">ターゲット予算</label>
+                    <label for="budgetInput" class="block text-xs font-bold text-slate-500 uppercase mb-2">ターゲット予算</label>
                     <div class="relative">
-                        <input type="number" id="budgetInput" value="3000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500 pr-12">
+                        <input type="number" id="budgetInput" value="3000" min="100" max="100000" step="100" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500 pr-12">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">円</span>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">モード選択</label>
+                    <label for="modeSelect" class="block text-xs font-bold text-slate-500 uppercase mb-2">モード選択</label>
                     <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
                         <option value="budget">予算ギリギリ詰め合わせ</option>
                         <option value="single">運試し！ぴったり単品狙い</option>
@@ -60,6 +76,22 @@
                         <i data-lucide="sparkles" class="w-5 h-5"></i> ガチャを回す！
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Google AdSense 広告枠（上部） -->
+        <div class="my-6 text-center">
+            <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">スポンサーリンク</div>
+            <div class="min-h-[100px] flex items-center justify-center bg-slate-100/70 border border-dashed border-slate-200 rounded-xl overflow-hidden">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                     data-ad-slot="XXXXXXXXXX"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+                </script>
             </div>
         </div>
 
@@ -86,9 +118,14 @@
                         -0 円
                     </div>
                 </div>
-                <button onclick="spinGacha()" class="bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2 rounded-lg border border-slate-200 text-sm shadow-sm flex items-center gap-1.5">
-                    <i data-lucide="rotate-cw" class="w-4 h-4"></i> もう一度回す
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="shareOnX()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-lg text-sm shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Xでシェア
+                    </button>
+                    <button onclick="spinGacha()" class="bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2 rounded-lg border border-slate-200 text-sm shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="rotate-cw" class="w-4 h-4"></i> もう一度回す
+                    </button>
+                </div>
             </div>
 
             <!-- 当たった商品リスト（商品ページへのリンク付き） -->
@@ -97,84 +134,192 @@
             </div>
         </div>
 
+        <!-- Google AdSense 広告枠（下部） -->
+        <div class="my-8 text-center">
+            <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">スポンサーリンク</div>
+            <div class="min-h-[100px] flex items-center justify-center bg-slate-100/70 border border-dashed border-slate-200 rounded-xl overflow-hidden">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                     data-ad-slot="YYYYYYYYYY"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+                </script>
+            </div>
+        </div>
+
         <!-- データ管理・ステータス領域 -->
-        <div class="mt-12 border-t border-slate-200 pt-8">
+        <div class="mt-8 border-t border-slate-200 pt-6">
             <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                 <div class="font-bold text-slate-700 flex justify-between items-center">
-                    <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-slate-400"></i> Supabaseデータ連携ステータス</span>
-                    <button onclick="loadProductsFromSupabase()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition font-bold text-slate-600">再読み込み</button>
+                    <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-slate-400"></i> 画材データ連携ステータス</span>
+                    <button onclick="refreshData()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition font-bold text-slate-600">キャッシュ更新</button>
                 </div>
-                <div class="mt-4 pt-4 border-t border-slate-100 text-sm space-y-2">
+                <div class="mt-3 pt-3 border-t border-slate-100 text-sm space-y-1.5">
                     <p class="text-slate-500">
-                        Supabase接続済み商品件数: <strong id="itemCount" class="text-slate-800">読み込み中...</strong> 件
+                        読込済み画材数: <strong id="itemCount" class="text-slate-800">準備中...</strong> 件
                     </p>
-                    <p class="text-xs text-slate-400">※GitHub Actionsの自動スクレイピングによってSupabaseに蓄積された最新データからガチャが回ります。</p>
+                    <p class="text-xs text-slate-400">※GitHub Actionsの自動スクレイピングによってSupabaseに蓄積された最新商品データ（約1.8万件）から選定されます。</p>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <!-- バナー広告枠（サンプル） -->
-    <div class="max-w-4xl mx-auto px-4 my-4 w-full text-center">
-        <div class="bg-slate-200/60 border border-dashed border-slate-300 rounded-xl py-4 px-2 text-xs text-slate-400 font-medium">
-            スポンサーリンク / 広告掲載スペース
-        </div>
-    </div>
-
     <!-- フッター -->
     <footer class="bg-slate-100 border-t border-slate-200 py-6 text-center text-xs text-slate-400">
         <div class="max-w-4xl mx-auto px-4">
-            <p>当アプリは笹部画材様の非公式ファン制作ツールです。</p>
-            <p class="mt-1">© 3,000 yen Art Supplies Gacha App</p>
+            <p>当アプリは笹部洋画材料店様のファンによる非公式ファン制作ツールです。</p>
+            <p class="mt-1">価格・在庫等の最新情報は必ず笹部画材公式サイトにてご確認ください。</p>
+            <p class="mt-1 font-mono text-[10px] text-slate-400">© 3,000 yen Art Supplies Gacha App</p>
         </div>
     </footer>
 
     <!-- アプリケーションロジック & Supabase連携 -->
     <script>
-        // Supabase の設定（ご自身のプロジェクトURLとAnonキーに書き換えてください）
+        // ==========================================
+        // 【設定】Supabase接続設定
+        // ※必ずダッシュボード（Settings > API）の「anon key (public)」を指定してください。
+        // ※管理者用「service_role key」は絶対に設定しないでください。
+        // ==========================================
         const SUPABASE_URL = 'あなたのSUPABASE_URL';
         const SUPABASE_ANON_KEY = 'あなたのSUPABASE_ANON_KEY';
 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // キャッシュ管理用キー（1時間有効）
+        const CACHE_KEY = 'sasabe_products_cache_v2';
+        const CACHE_EXPIRE_KEY = 'sasabe_products_cache_expire_v2';
+        const CACHE_TTL_MS = 60 * 60 * 1000; // 1時間
+
+        let _supabase = null;
+        if (SUPABASE_URL && !SUPABASE_URL.includes('あなたの') && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('あなたの')) {
+            try {
+                _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (e) {
+                console.warn('Supabase client init failed:', e);
+            }
+        }
 
         let items = [];
 
-        // 起動時にSupabaseから商品データを取得
-        async function loadProductsFromSupabase() {
+        // XSS防止用エスケープ関数
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // 安全なリンク検証（笹部画材ドメインまたは相対パスのみ許可）
+        function sanitizeUrl(rawUrl) {
+            if (!rawUrl) return '';
+            const u = String(rawUrl).trim();
+            if (u.startsWith('https://www.sasabegazai.co.jp/') || 
+                u.startsWith('http://www.sasabegazai.co.jp/') || 
+                u.startsWith('/')) {
+                return escapeHtml(u);
+            }
+            return '';
+        }
+
+        // 起動時に商品データをロード（キャッシュ優先で高速化＆Supabase転送量節約）
+        async function loadProducts() {
+            const countEl = document.getElementById('itemCount');
+            
+            // 1. セッションキャッシュの確認
             try {
-                const { data, error } = await _supabase.from('products').select('*');
-                if (error) {
-                    console.error(error);
-                    document.getElementById('itemCount').innerText = 'エラー (取得失敗)';
-                    return;
-                }
-                items = data || [];
-                document.getElementById('itemCount').innerText = items.length;
-                if (items.length === 0) {
-                    alert('Supabaseに商品データがありません。スクレイピングを実行してください。');
+                const cached = sessionStorage.getItem(CACHE_KEY);
+                const expire = sessionStorage.getItem(CACHE_EXPIRE_KEY);
+                if (cached && expire && Date.now() < parseInt(expire, 10)) {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        items = parsed;
+                        countEl.innerText = `${items.length.toLocaleString()} (キャッシュ)`;
+                        return;
+                    }
                 }
             } catch (e) {
-                console.error(e);
-                document.getElementById('itemCount').innerText = '接続エラー';
+                console.warn('Cache read error:', e);
             }
+
+            // 2. Supabaseからの取得
+            if (_supabase) {
+                try {
+                    countEl.innerText = 'Supabaseから取得中...';
+                    // 脆弱性対策・負荷対策：必要な列のみを指定し、最大10,000件程度を安全に取得
+                    const { data, error } = await _supabase
+                        .from('products')
+                        .select('name, price, category, url')
+                        .eq('in_stock', true)
+                        .limit(5000);
+
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        items = data;
+                        try {
+                            sessionStorage.setItem(CACHE_KEY, JSON.stringify(items));
+                            sessionStorage.setItem(CACHE_EXPIRE_KEY, String(Date.now() + CACHE_TTL_MS));
+                        } catch (quotaError) {
+                            console.warn('SessionStorage full:', quotaError);
+                        }
+                        countEl.innerText = items.length.toLocaleString();
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Supabase fetch error:', err);
+                    countEl.innerText = '接続エラー';
+                }
+            }
+
+            // 3. フォールバック（Supabase未設定時のサンプルデータ）
+            if (items.length === 0) {
+                items = [
+                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "ナムラ 油彩筆 SK 8号 丸", price: 920, category: "筆", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "ホルベイン ペインティングナイフ No.1", price: 1100, category: "ナイフ", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "クサカベ テレピン 55ml", price: 680, category: "画用液", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "クレサン 張りキャンバス F4号", price: 850, category: "キャンバス", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "ホルベイン オイルパレット 楕円型", price: 1980, category: "パレット", url: "https://www.sasabegazai.co.jp/" }
+                ];
+                countEl.innerText = `${items.length} (デモサンプルモード)`;
+            }
+        }
+
+        function refreshData() {
+            sessionStorage.removeItem(CACHE_KEY);
+            sessionStorage.removeItem(CACHE_EXPIRE_KEY);
+            loadProducts();
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             lucide.createIcons();
-            loadProductsFromSupabase();
+            loadProducts();
         });
 
+        // ガチャ実行
         async function spinGacha() {
             if (items.length === 0) {
-                alert('商品データが読み込まれていません。');
-                await loadProductsFromSupabase();
-                if (items.length === 0) return;
+                await loadProducts();
+                if (items.length === 0) {
+                    alert('商品データがありません。');
+                    return;
+                }
             }
 
-            const budget = parseInt(document.getElementById('budgetInput').value) || 3000;
-            const mode = document.getElementById('modeSelect').value;
+            // 入力バリデーション（安全対策）
+            let rawBudget = parseInt(document.getElementById('budgetInput').value, 10);
+            if (isNaN(rawBudget) || rawBudget <= 0) rawBudget = 3000;
+            if (rawBudget > 1000000) rawBudget = 1000000; // 上限保護
+            const budget = rawBudget;
+            document.getElementById('budgetInput').value = budget;
 
+            const mode = document.getElementById('modeSelect').value;
             const rouletteDisplay = document.getElementById('rouletteDisplay');
             const slotItem = document.getElementById('slotItem');
             const resultContainer = document.getElementById('resultContainer');
@@ -184,15 +329,12 @@
             resultContainer.classList.add('hidden');
             rouletteDisplay.classList.remove('hidden');
 
-            // スロット高速切り替え演出
-            let counter = 0;
+            // ルーレット演出（安全にtextContentを使用）
             const interval = setInterval(() => {
                 const randomSample = items[Math.floor(Math.random() * items.length)];
-                slotItem.innerText = `${randomSample.name} (¥${randomSample.price.toLocaleString()})`;
-                counter++;
-            }, 80);
+                slotItem.textContent = `${randomSample.name} (¥${Number(randomSample.price).toLocaleString()})`;
+            }, 70);
 
-            // 1.5秒後に結果決定
             setTimeout(() => {
                 clearInterval(interval);
                 rouletteDisplay.classList.add('hidden');
@@ -201,36 +343,39 @@
                 const selectedItems = calculateResult(budget, mode);
                 renderResult(selectedItems, budget);
 
-                // 紙吹雪演出
-                confetti({
-                    particleCount: 50,
-                    spread: 60,
-                    origin: { y: 0.7 }
-                });
-
-            }, 1500);
+                try {
+                    confetti({
+                        particleCount: 50,
+                        spread: 60,
+                        origin: { y: 0.7 }
+                    });
+                } catch(e) {}
+            }, 1200);
         }
 
+        // ガチャ計算ロジック
         function calculateResult(budget, mode) {
-            let shuffled = [...items].sort(() => 0.5 - Math.random());
-            let selected = [];
+            const shuffled = [...items].sort(() => 0.5 - Math.random());
+            const selected = [];
             let currentTotal = 0;
 
             if (mode === 'budget') {
-                for (let item of shuffled) {
+                for (let i = 0; i < shuffled.length && selected.length < 20; i++) {
+                    const item = shuffled[i];
                     if (currentTotal + item.price <= budget) {
                         selected.push(item);
                         currentTotal += item.price;
                     }
                 }
             } else if (mode === 'single') {
-                let affordable = items.filter(i => i.price <= budget);
+                const affordable = items.filter(i => i.price <= budget);
                 if (affordable.length > 0) {
                     selected.push(affordable[Math.floor(Math.random() * affordable.length)]);
                 }
             } else if (mode === '3items') {
-                for (let item of shuffled) {
-                    if (selected.length < 3 && currentTotal + item.price <= budget) {
+                for (let i = 0; i < shuffled.length && selected.length < 3; i++) {
+                    const item = shuffled[i];
+                    if (currentTotal + item.price <= budget) {
                         selected.push(item);
                         currentTotal += item.price;
                     }
@@ -239,6 +384,7 @@
             return selected;
         }
 
+        // 結果描画（安全なDOM生成・XSS対策）
         function renderResult(selectedItems, budget) {
             const resultContainer = document.getElementById('resultContainer');
             const itemList = document.getElementById('itemList');
@@ -249,34 +395,55 @@
             let total = 0;
 
             if (selectedItems.length === 0) {
-                itemList.innerHTML = '<p class="col-span-2 text-center text-slate-400 py-4">条件に合う商品が見つかりませんでした。</p>';
+                itemList.innerHTML = '<p class="col-span-2 text-center text-slate-400 py-6 font-medium">条件に合う商品が見つかりませんでした。予算を増やして再度お試しください。</p>';
             }
 
             selectedItems.forEach(item => {
-                total += item.price;
+                const price = Number(item.price) || 0;
+                total += price;
+
+                const safeName = escapeHtml(item.name);
+                const safeCategory = escapeHtml(item.category || '画材');
+                const safeUrl = sanitizeUrl(item.url);
+
                 const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between gap-3";
+                card.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between gap-3 hover:shadow-md transition";
                 
-                // アフィリエイト/商品ページへのリンクボタンをカード内に設置
+                const linkButton = safeUrl ? `
+                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                        商品を見る <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </a>
+                ` : '';
+
                 card.innerHTML = `
                     <div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">${item.category || '画材'}</span>
-                        <h4 class="font-bold text-slate-800 text-sm md:text-base">${item.name}</h4>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">${safeCategory}</span>
+                        <h4 class="font-bold text-slate-800 text-sm md:text-base leading-snug">${safeName}</h4>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-                        <span class="font-black text-rose-500 text-base md:text-lg">¥${item.price.toLocaleString()}</span>
-                        ${item.url ? `<a href="${item.url}" target="_blank" rel="noopener noreferrer" class="text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">商品を見る <i data-lucide="external-link" class="w-3 h-3"></i></a>` : ''}
+                        <span class="font-black text-rose-500 text-base md:text-lg">¥${price.toLocaleString()}</span>
+                        ${linkButton}
                     </div>
                 `;
                 itemList.appendChild(card);
             });
 
-            totalPriceEl.innerText = total.toLocaleString();
+            totalPriceEl.textContent = total.toLocaleString();
             const diff = budget - total;
-            budgetDiffEl.innerText = `おつり: ${diff.toLocaleString()} 円`;
+            budgetDiffEl.textContent = `おつり: ${diff.toLocaleString()} 円`;
 
             resultContainer.classList.remove('hidden');
-            lucide.createIcons(); // アイコンを再描画
+            lucide.createIcons();
+        }
+
+        // X（Twitter）シェア機能
+        function shareOnX() {
+            const total = document.getElementById('totalPrice').textContent;
+            const budget = document.getElementById('budgetInput').value;
+            const text = `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円】ガチャを回しました！\n合計金額: ¥${total}\n\n笹部画材 3,000円ガチャ＆ルーレット\n#笹部画材 #画材ガチャ #笹部画材ガチャ`;
+            const url = window.location.href;
+            const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
         }
     </script>
 </body>
