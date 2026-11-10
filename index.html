@@ -55,42 +55,42 @@
 <body class="bg-[#FFFFFF] text-slate-800 min-h-screen flex flex-col justify-between">
 
     <!-- ヘッダー -->
-    <header class="bg-gradient-to-r from-[#1F7068] via-[#3BA29B] to-[#2BB3A3] text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-6 flex flex-wrap justify-between items-center gap-4">
+    <header class="bg-gradient-to-r from-[#1F7068] via-[#3BA29B] to-[#2BB3A3] text-white shadow-sm">
+        <div class="max-w-4xl mx-auto px-3 py-3 sm:px-4 sm:py-5 flex justify-between items-center gap-2">
             <div>
-                <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full text-emerald-50">非公式ファンツール</span>
-                <h1 class="text-2xl md:text-3xl font-black tracking-tight mt-1">笹部画材 3,000円ガチャ 🎨</h1>
+                <span class="text-[10px] font-semibold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full text-emerald-50">非公式ファンツール</span>
+                <h1 class="text-base sm:text-xl md:text-2xl font-black tracking-tight mt-0.5">笹部画材 3,000円ガチャ 🎨</h1>
             </div>
-            <a href="https://www.sasabegazai.co.jp/" target="_blank" rel="noopener noreferrer" class="text-xs md:text-sm bg-white/10 hover:bg-white/20 transition px-3 py-1.5 rounded-lg border border-white/20 flex items-center gap-1 font-medium">
-                公式サイトを開く <i data-lucide="external-link" class="w-4 h-4"></i>
+            <a href="https://www.sasabegazai.co.jp/" target="_blank" rel="noopener noreferrer" class="text-[11px] sm:text-xs bg-white/10 hover:bg-white/20 transition px-2.5 py-1 rounded-lg border border-white/20 flex items-center gap-1 font-medium whitespace-nowrap">
+                公式サイト <i data-lucide="external-link" class="w-3 h-3"></i>
             </a>
         </div>
     </header>
 
     <!-- メインコンテンツ -->
-    <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
+    <main class="max-w-4xl mx-auto px-3 py-3.5 sm:px-4 sm:py-6 w-full flex-grow">
         
         <!-- コントロールエリア -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-[#2BB3A3]/25 mb-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+        <div class="bg-white rounded-xl p-3 sm:p-5 shadow-xs border border-[#2BB3A3]/25 mb-4 sm:mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 items-end">
                 <div>
-                    <label for="budgetInput" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">ターゲット予算</label>
+                    <label for="budgetInput" class="block text-[11px] font-bold text-[#1F7068] uppercase mb-1">ターゲット予算</label>
                     <div class="relative">
-                        <input type="number" id="budgetInput" value="3000" min="100" max="10000000" step="100" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] pr-12 transition">
-                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">円</span>
+                        <input type="number" id="budgetInput" value="3000" min="100" max="10000000" step="100" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 font-bold text-base sm:text-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] pr-10 transition">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs">円</span>
                     </div>
                 </div>
 
                 <div>
-                    <label for="categorySelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">カテゴリー絞り込み</label>
-                    <select id="categorySelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 font-bold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
+                    <label for="categorySelect" class="block text-[11px] font-bold text-[#1F7068] uppercase mb-1">カテゴリー絞り込み</label>
+                    <select id="categorySelect" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 font-bold text-slate-700 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
                         <option value="all">🎨 すべてのカテゴリー（読込中...）</option>
                     </select>
                 </div>
 
                 <div>
-                    <label for="modeSelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">ガチャモード</label>
-                    <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
+                    <label for="modeSelect" class="block text-[11px] font-bold text-[#1F7068] uppercase mb-1">ガチャモード</label>
+                    <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 font-bold text-slate-700 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
                         <option value="single">🎯 運試し！ぴったり単品狙い</option>
                         <option value="3items">🎁 ちょうど3点チョイス</option>
                         <option value="budget" selected>🛒 予算ギリギリ詰め合わせ</option>
@@ -98,80 +98,80 @@
                 </div>
 
                 <div>
-                    <button id="spinBtn" onclick="spinGacha()" class="w-full bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-lg py-3 px-6 rounded-xl shadow-lg shadow-amber-500/25 transition duration-150 flex justify-center items-center gap-2">
-                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    <button id="spinBtn" onclick="spinGacha()" class="w-full bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-sm sm:text-base py-2.5 px-4 rounded-lg shadow-md shadow-amber-500/25 transition duration-150 flex justify-center items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
                         <span>ガチャを回す！</span>
                     </button>
                 </div>
             </div>
 
             <!-- ステータス表示 -->
-            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center text-xs text-slate-400 gap-2">
-                <span class="flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    読み込み商品数: <span id="itemCount" class="font-bold text-slate-600">取得中...</span>
+            <div class="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-wrap justify-between items-center text-[10.5px] text-slate-400 gap-1.5">
+                <span class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    商品数: <span id="itemCount" class="font-bold text-slate-600">取得中...</span>
                 </span>
-                <span class="flex items-center gap-1 text-[11px]">
-                    ※価格・在庫は最新データと異なる場合があります
-                    <button onclick="refreshData()" title="データを再読み込み" class="text-[#3BA29B] hover:text-[#1F7068] ml-1 underline font-medium">更新</button>
+                <span class="flex items-center gap-1 text-[10px]">
+                    ※最新と異なる場合あり
+                    <button onclick="refreshData()" title="データを再読み込み" class="text-[#3BA29B] hover:text-[#1F7068] ml-0.5 underline font-medium">更新</button>
                 </span>
             </div>
         </div>
 
         <!-- ルーレット演出エリア（アニメーション中のみ表示） -->
-        <div id="rouletteDisplay" class="hidden mb-8 text-center bg-[#1F7068] text-white py-8 px-4 rounded-2xl shadow-inner border border-[#2BB3A3]">
-            <p class="text-xs uppercase tracking-widest text-[#2BB3A3] font-bold mb-2 animate-pulse">Selecting Art Supplies...</p>
-            <div id="slotItem" class="text-xl md:text-2xl font-black truncate max-w-lg mx-auto"></div>
+        <div id="rouletteDisplay" class="hidden mb-4 sm:mb-6 text-center bg-[#1F7068] text-white py-4 px-3 rounded-xl shadow-inner border border-[#2BB3A3]">
+            <p class="text-[10px] uppercase tracking-widest text-[#2BB3A3] font-bold mb-1 animate-pulse">Selecting Art Supplies...</p>
+            <div id="slotItem" class="text-base sm:text-lg font-black truncate max-w-lg mx-auto"></div>
         </div>
 
 
 
         <!-- 結果表示エリア -->
         <div id="resultContainer" class="hidden">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-[#2BB3A3]/25 mb-8">
-                <div class="flex flex-wrap justify-between items-center pb-4 mb-6 border-b border-slate-100 gap-4">
+            <div class="bg-white rounded-xl p-3 sm:p-5 shadow-xs border border-[#2BB3A3]/25 mb-4 sm:mb-6">
+                <div class="flex justify-between items-center pb-2.5 mb-3 border-b border-slate-100 gap-2">
                     <div>
-                        <span class="text-xs font-bold text-[#3BA29B] uppercase tracking-wider">Gacha Result</span>
-                        <h2 class="text-xl font-black text-slate-800">選ばれた画材セット</h2>
+                        <span class="text-[10px] font-bold text-[#3BA29B] uppercase tracking-wider block">Gacha Result</span>
+                        <h2 class="text-sm sm:text-base font-black text-slate-800">選ばれた画材セット</h2>
                     </div>
                     <div class="text-right">
-                        <div class="text-xs font-bold text-slate-400 uppercase">合計金額</div>
-                        <div class="text-2xl md:text-3xl font-black text-[#1F7068]">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">合計金額</div>
+                        <div class="text-lg sm:text-2xl font-black text-[#1F7068] leading-tight">
                             ¥<span id="totalPrice">0</span>
                         </div>
-                        <div id="budgetDiff" class="text-xs font-semibold text-[#2BB3A3] mt-0.5">おつり: 0 円</div>
+                        <div id="budgetDiff" class="text-[11px] font-semibold text-[#2BB3A3]">おつり: 0 円</div>
                     </div>
                 </div>
 
                 <!-- 案内・注意通知（予算不足時や高額時など） -->
-                <div id="resultNotice" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium flex items-center gap-2"></div>
+                <div id="resultNotice" class="hidden mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 font-medium flex items-center gap-1.5"></div>
 
                 <!-- 商品カード一覧 -->
-                <div id="itemList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+                <div id="itemList" class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2.5 mb-3.5"></div>
 
                 <!-- シェア・再抽選ボタン群 -->
-                <div class="pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center gap-3">
-                    <div class="flex flex-wrap items-center gap-2">
+                <div class="pt-2.5 border-t border-slate-100 flex flex-wrap justify-between items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5">
                         <!-- X (Twitter) シェア -->
-                        <button onclick="shareOnX()" class="bg-black hover:bg-slate-800 text-white font-bold text-xs py-2 px-3.5 rounded-lg flex items-center gap-1.5 transition">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        <button onclick="shareOnX()" class="bg-black hover:bg-slate-800 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-md flex items-center gap-1 transition">
+                            <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                             ポスト
                         </button>
                         <!-- LINE で送る -->
-                        <button onclick="shareOnLine()" class="bg-[#06C755] hover:bg-[#05a847] text-white font-bold text-xs py-2 px-3.5 rounded-lg flex items-center gap-1.5 transition">
-                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.498.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .627.285.627.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
-                            LINEで送る
+                        <button onclick="shareOnLine()" class="bg-[#06C755] hover:bg-[#05a847] text-white font-bold text-[11px] py-1.5 px-2.5 rounded-md flex items-center gap-1 transition">
+                            <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.498.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .627.285.627.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                            LINE
                         </button>
                         <!-- クリップボードにコピー -->
-                        <button id="copyBtn" onclick="copyResult()" class="bg-[#3BA29B] hover:bg-[#1F7068] text-white font-bold text-xs py-2 px-3.5 rounded-lg flex items-center gap-1.5 transition">
-                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                            結果をコピー
+                        <button id="copyBtn" onclick="copyResult()" class="bg-[#3BA29B] hover:bg-[#1F7068] text-white font-bold text-[11px] py-1.5 px-2.5 rounded-md flex items-center gap-1 transition">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            コピー
                         </button>
                     </div>
 
-                    <button onclick="spinGacha()" class="text-xs text-[#1F7068] hover:text-[#3BA29B] font-bold flex items-center gap-1">
-                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
-                        もう一度回す
+                    <button onclick="spinGacha()" class="text-[11px] text-[#1F7068] hover:text-[#3BA29B] font-bold flex items-center gap-1">
+                        <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+                        もう一度
                     </button>
                 </div>
             </div>
@@ -180,23 +180,23 @@
 
 
         <!-- 作家支援ツール集（プロトタイプ） -->
-        <div class="mt-8 mb-4 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider text-center mb-3">🎨 画家・作家向けプロトタイプツール</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left">
-                <a href="hang-navi/" class="p-3 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 shadow-sm transition block group">
-                    <span class="text-base block mb-1">🖼️</span>
-                    <strong class="text-xs font-bold text-slate-800 block group-hover:text-[#1F7068]">搬入ナビ</strong>
-                    <span class="text-[10px] text-slate-400 block mt-0.5">画廊の壁面配置＆釘打ち計算</span>
+        <div class="mt-4 mb-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+            <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center mb-2">🎨 画家・作家向けプロトタイプツール</h3>
+            <div class="grid grid-cols-3 gap-1.5 text-left">
+                <a href="hang-navi/" class="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 shadow-xs transition block group">
+                    <span class="text-sm block">🖼️</span>
+                    <strong class="text-[11px] font-bold text-slate-800 block group-hover:text-[#1F7068] truncate">搬入ナビ</strong>
+                    <span class="text-[9px] text-slate-400 block truncate">壁面配置計算</span>
                 </a>
-                <a href="art-stock/" class="p-3 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 shadow-sm transition block group">
-                    <span class="text-base block mb-1">🎨</span>
-                    <strong class="text-xs font-bold text-slate-800 block group-hover:text-[#1F7068]">画材マネージャー</strong>
-                    <span class="text-[10px] text-slate-400 block mt-0.5">バーコード読取＆手持ち在庫管理</span>
+                <a href="art-stock/" class="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 shadow-xs transition block group">
+                    <span class="text-sm block">🎨</span>
+                    <strong class="text-[11px] font-bold text-slate-800 block group-hover:text-[#1F7068] truncate">画材管理</strong>
+                    <span class="text-[9px] text-slate-400 block truncate">手持ち在庫</span>
                 </a>
-                <a href="fog-walker/" class="p-3 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 shadow-sm transition block group">
-                    <span class="text-base block mb-1">🗺️</span>
-                    <strong class="text-xs font-bold text-slate-800 block group-hover:text-[#1F7068]">FogWalker</strong>
-                    <span class="text-[10px] text-slate-400 block mt-0.5">歩いた場所だけ色づくRPGマップ</span>
+                <a href="fog-walker/" class="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 shadow-xs transition block group">
+                    <span class="text-sm block">🗺️</span>
+                    <strong class="text-[11px] font-bold text-slate-800 block group-hover:text-[#1F7068] truncate">FogWalker</strong>
+                    <span class="text-[9px] text-slate-400 block truncate">RPG散歩</span>
                 </a>
             </div>
         </div>
@@ -204,8 +204,8 @@
     </main>
 
     <!-- フッター -->
-    <footer class="bg-slate-50 border-t border-slate-200 text-slate-400 py-6 text-xs text-center">
-        <div class="max-w-4xl mx-auto px-4 space-y-2">
+    <footer class="bg-slate-50 border-t border-slate-200 text-slate-400 py-3.5 text-[10px] text-center">
+        <div class="max-w-4xl mx-auto px-4 space-y-1">
             <p>当ツールは笹部画材（笹部洋画材料店）の非公式ファンツールです。商品データ・商標の著作権は各権利者に帰属します。</p>
             <p class="text-slate-300">Created with ❤️ for Art Lovers</p>
         </div>
@@ -661,21 +661,21 @@
                 const safeUrl = sanitizeUrl(item.url);
 
                 const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-xl border border-[#2BB3A3]/20 shadow-sm flex flex-col justify-between gap-3 hover:shadow-md hover:border-[#2BB3A3]/50 transition";
+                card.className = "bg-white p-2.5 sm:p-3.5 rounded-lg border border-[#2BB3A3]/20 shadow-2xs flex flex-col justify-between gap-1.5 hover:shadow-xs hover:border-[#2BB3A3]/50 transition";
                 
                 const linkButton = safeUrl ? `
-                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-xs bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
-                        商品を見る <i data-lucide="external-link" class="w-3 h-3"></i>
+                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0">
+                        見る <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
                     </a>
                 ` : '';
 
                 card.innerHTML = `
                     <div>
-                        <span class="text-[10px] font-bold text-[#3BA29B] uppercase tracking-wider block mb-1">${safeCategory}</span>
-                        <h4 class="font-bold text-slate-800 text-sm md:text-base leading-snug">${safeName}</h4>
+                        <span class="text-[9px] font-bold text-[#3BA29B] uppercase tracking-wider block mb-0.5">${safeCategory}</span>
+                        <h4 class="font-bold text-slate-800 text-xs sm:text-sm leading-snug line-clamp-2">${safeName}</h4>
                     </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-                        <span class="font-black text-[#1F7068] text-base md:text-lg">¥${price.toLocaleString()}</span>
+                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-50 mt-1">
+                        <span class="font-black text-[#1F7068] text-sm sm:text-base">¥${price.toLocaleString()}</span>
                         ${linkButton}
                     </div>
                 `;
