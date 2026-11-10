@@ -13,15 +13,20 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 BASE_URL = "https://www.sasabegazai.co.jp/"
-# 404エラーを防ぐため、明確に index.html を指定
-TARGET_URL = "https://www.sasabegazai.co.jp/index.html"
+TARGET_URL = "https://www.sasabegazai.co.jp/"
 
 def fetch_sasabe_products():
+    # ブラウザからのアクセスと完全に同じ偽装ヘッダーを設定
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "ja,en-US;q=0.9,en;q=0.8"
     }
+    
     try:
-        response = requests.get(TARGET_URL, headers=headers, timeout=15)
+        # セッションを使ってアクセス（Cookieや接続を維持）
+        session = requests.Session()
+        response = session.get(TARGET_URL, headers=headers, timeout=15)
         response.encoding = response.apparent_encoding or 'utf-8'
     except Exception as e:
         print(f"Failed to connect: {e}")
