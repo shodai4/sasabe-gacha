@@ -45,11 +45,14 @@ GitHub リポジトリの `Settings > Secrets and variables > Actions` に以下
 
 ## 3. Webアプリ（ガチャ）の一般公開手順（GitHub Pages）
 
-1. **Supabase接続キーの設定 (`index.html`)**:
-   `index.html` 内の以下の箇所に、Supabaseの公開用キーを設定します。
+1. **Supabase接続キーの設定 (`config.js`)**:
+   `config.js` を開き、Supabaseの公開用キーを設定します。
    ```javascript
-   const SUPABASE_URL = 'https://あなたのプロジェクト.supabase.co';
-   const SUPABASE_ANON_KEY = 'あなたのanon_public_key';
+   window.APP_CONFIG = {
+       SUPABASE_URL: "https://あなたのプロジェクト.supabase.co",
+       SUPABASE_ANON_KEY: "あなたのanon_public_key",
+       CACHE_TTL_MS: 21600000
+   };
    ```
    ※**注意**: 管理者用の `service_role key` は絶対に設定しないでください。必ず `anon public key` を使用してください。
 

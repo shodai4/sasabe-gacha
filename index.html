@@ -41,6 +41,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 外部設定ファイル (Supabase接続キー等) -->
+    <script src="config.js"></script>
 
     <!-- Google AdSense スクリプトタグ（審査通過後にパブリッシャーIDを書き換えてください） -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
@@ -197,18 +199,19 @@
     <!-- アプリケーション ロジック -->
     <script>
         // ==========================================
-        // 設定 & 定数
+        // 設定 & 定数 (config.jsから読み込み)
         // ==========================================
-        const SUPABASE_URL = "https://hzcliswtdybrvjtwvwhm.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6Y2xpc3d0ZHlicnZqdHd2d2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDgzMjMsImV4cCI6MjA3ODMyNDMyM30.41pI_5V0UjO1iLByyGZsoS6q3P9pI4Y3z400iEa-aDE";
+        const CFG = window.APP_CONFIG || {};
+        const SUPABASE_URL = CFG.SUPABASE_URL || "";
+        const SUPABASE_ANON_KEY = CFG.SUPABASE_ANON_KEY || "";
 
-        const CACHE_KEY = "sasabe_gacha_products_v3";
-        const CACHE_EXPIRE_KEY = "sasabe_gacha_expire_v3";
-        const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6時間
+        const CACHE_KEY = "sasabe_gacha_products_v4";
+        const CACHE_EXPIRE_KEY = "sasabe_gacha_expire_v4";
+        const CACHE_TTL_MS = CFG.CACHE_TTL_MS || (6 * 60 * 60 * 1000); // 6時間
 
         let _supabase = null;
         try {
-            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes("xxxx")) {
                 _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch (e) {
