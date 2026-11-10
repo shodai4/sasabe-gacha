@@ -140,14 +140,6 @@
         let isGpsActive = false;
         let autoWalkInterval = null;
 
-        // 霧データ（0: 未踏の霧, 1: 踏破済み）
-        let fogGrid = JSON.parse(localStorage.getItem('fog_grid') || 'null');
-        if (!fogGrid) {
-            fogGrid = Array(ROWS).fill(0).map(() => Array(COLS).fill(0));
-            // 初期地点の周囲を少し開放
-            clearFogAround(player.x, player.y, 4);
-        }
-
         // 隠しスポット（ランドマーク）
         const POI_LIST = [
             { id: 1, name: "花園中央公園", icon: "🌳", x: 18, y: 8, discovered: false, desc: "噴水と芝生が広がる憩いの大公園" },
@@ -157,6 +149,12 @@
             { id: 5, name: "静かな鎮守の杜", icon: "⛩️", x: 25, y: 22, discovered: false, desc: "樹齢数百年の大楠が立つ古社" },
             { id: 6, name: "川沿いの桜並木", icon: "🌸", x: 33, y: 16, discovered: false, desc: "春には満開のピンクに染まる散歩道" }
         ];
+
+        // 霧データ（0: 未踏の霧, 1: 踏破済み）
+        let fogGrid = JSON.parse(localStorage.getItem('fog_grid') || 'null');
+        if (!fogGrid) {
+            fogGrid = Array(ROWS).fill(0).map(() => Array(COLS).fill(0));
+        }
 
         // 道路と自然のマップシード
         function isRoad(x, y) {
@@ -374,6 +372,7 @@
         });
 
         window.addEventListener('load', () => {
+            clearFogAround(player.x, player.y, 4);
             render();
             lucide.createIcons();
         });
