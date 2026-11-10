@@ -14,11 +14,10 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 BASE_URL = "https://www.sasabegazai.co.jp/"
-# 笹部画材の商品一覧ページ
-TARGET_URL = "https://www.sasabegazai.co.jp/item.html"
+TARGET_URL = "https://www.sasabegazai.co.jp/"
 
 def fetch_sasabe_products():
-    """笹部画材のサイトから商品情報を取得してリストで返す"""
+    """笹部画材のトップページや特売・新着部分から商品情報を取得する"""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -36,32 +35,46 @@ def fetch_sasabe_products():
 
     soup = BeautifulSoup(response.text, 'html.parser')
     products = []
-
-    # 商品リンク (item.html?id=...) または商品要素を探す
-    links = soup.find_all('a', href=re.compile(r'item\.html\?id='))
-    
     seen_urls = set()
 
-    for link in links:
-        product_url = link.get('href', '')
-        if not product_url.startswith('http'):
-            product_url = BASE_URL + product_url.lstrip('/')
+    # 1. ページ内の「item.html?id=...」または「listview/item.html?id=...」のリンクをすべて探索
+    links = soup.find_all('a', href=re.compile(r'item\.html\?id='))
 
-        # 重複チェック
+    for link in links:
+        href = link.get('href', '')
+        if not href.startswith('http'):
+            # 絶対パス・相対パスの調整
+            product_url = BASE_URL + href.lstrip('/')
+        else:
+            product_url = href
+
+        # 重複防止
         if product_url in seen_urls:
             continue
         seen_urls.add(product_url)
 
-        # 親要素や周辺テキストから商品名や価格を取得
-        container = link.find_parent(['td', 'div', 'li', 'tr']) or link
-        text_content = container.get_text(separator=' ', strip=True)
+        # 商品名や周辺テキストの取得
+        # 画像のaltや親要素・テキストから商品名を探す
+        img = link.find('img')
+        name = ""
+        if img and img.get('alt') and img.get('alt') != "商品画像":
+            name = img.get('alt').strip()
+        
+        if not name:
+            # 周辺のテキストコンテナを探す
+            container = link.find_parent(['div', 'center', 'td']) or link
+            text_el = container.find('font', {'size': '2'}) or container
+            name = text_el.get_text(separator=' ', strip=True)
+            # 改行や余分なスペースを整理
+            name = re.sub(r'\s+', ' ', name)
 
-        name = link.get_text(strip=True)
-        if not name or len(name) < 2:
+        if not name or len(name) < 2 or "商品画像" in name:
             continue
 
-        # 価格（数字）の抽出
-        price_match = re.search(r'(\d{1,3}(?:,\d{3})*|\d+)\s*円', text_content)
+        # 価格の抽出（「￥1,500」や「定価￥242」などから数値を拾う）
+        container_text = link.find_parent(['div', 'center', 'td']).get_text(separator=' ', strip=True) if link.find_parent(['div', 'center', 'td']) else link.get_text()
+        
+        price_match = re.search(r'(?:￥|\\)\s*([\d,]+)', container_text)
         price = 0
         if price_match:
             price_str = price_match.group(1).replace(',', '')
@@ -70,15 +83,15 @@ def fetch_sasabe_products():
             except ValueError:
                 price = 0
 
-        # 在庫判定
+        # 在庫・セール判定
         in_stock = True
-        if "品切れ" in text_content or "在庫なし" in text_content:
+        if "品切れ" in container_text or "在庫なし" in container_text:
             in_stock = False
 
         products.append({
-            "name": name,
+            "name": name[:100],  # 長すぎる場合は制限
             "price": price,
-            "category": "画材",
+            "category": "画材・セール品",
             "url": product_url,
             "in_stock": in_stock
         })
@@ -88,6 +101,10 @@ def fetch_sasabe_products():
 
 def update_supabase(products):
     """取得した商品データをSupabaseにUPSERT（更新・挿入）"""
+    if not products:
+        print("No products to update.")
+        return
+
     success_count = 0
     for item in products:
         try:
