@@ -1,7 +1,8 @@
-"""笹部洋画材料店 商品スクレイパー (v3.0)
+"""笹部洋画材料店 商品スクレイパー (v3.1)
 
 - 笹部画材（sasabegazai.co.jp）の全ブランド・シリーズ一覧（244シリーズ）を巡回
-- サイトトップの第1階層大カテゴリー（油絵具・ピグメント、画溶液・クリーナー等）を抽出し商品に紐付け
+- サイトトップの第1階層大カテゴリー（油絵具・ピグメント等）を抽出し商品に紐付け
+- 特設「オリジナル商品」ページ（original.html）も巡回し、全16カテゴリー網羅
 - 実商品と実売価格を抽出し、Supabase の products テーブルへ一括 Upsert
 - サーバー負荷軽減のため 0.5s 待機、0件時は安全停止
 """
@@ -167,8 +168,62 @@ def parse_item_page(html):
     return unique
 
 
+def crawl_original_products(session):
+    """笹部画材オリジナル商品特設ページ（original.html）からオリジナル商品一覧を取得"""
+    url = f"{BASE_URL}original.html"
+    try:
+        r = session.get(url, timeout=30)
+        if r.status_code != 200:
+            print(f"Failed to fetch original products page: HTTP {r.status_code}", flush=True)
+            return []
+
+        html = r.content.decode("utf-8", "replace")
+        soup = BeautifulSoup(html, "html.parser")
+        items = []
+
+        for card in soup.select("div.product-card"):
+            h3 = card.select_one("h3")
+            p_price = card.select_one("p.price")
+            a_link = card.select_one("a.btn-detail") or card.select_one('a[href*="pop.html"], a[href*="item.html"]')
+
+            if not (h3 and p_price and a_link):
+                continue
+
+            name = h3.get_text(" ", strip=True)
+            name = re.sub(r"\s+", " ", name).strip()
+            price = parse_money(p_price.get_text())
+            if not price:
+                continue
+
+            href = a_link.get("href", "").strip()
+            if not href.startswith("http"):
+                href = BASE_URL + href.lstrip("/")
+
+            items.append({
+                "name": name[:200],
+                "price": price,
+                "category": "オリジナル商品",
+                "url": href,
+                "in_stock": True,
+            })
+
+        seen = set()
+        unique = []
+        for it in items:
+            if it["url"] in seen:
+                continue
+            seen.add(it["url"])
+            unique.append(it)
+
+        print(f"[オリジナル商品] Fetched {len(unique)} original products from original.html", flush=True)
+        return unique
+    except Exception as e:
+        print(f"Error crawling original products: {e}", flush=True)
+        return []
+
+
 def crawl(session, only_series_ids=None):
-    """全シリーズを巡回して商品リストを収集"""
+    """全シリーズおよびオリジナル商品ページを巡回して商品リストを収集"""
     series_map = fetch_series_and_categories(session)
     print(f"Found {len(series_map)} series pages across categories to crawl.", flush=True)
 
@@ -191,7 +246,7 @@ def crawl(session, only_series_ids=None):
 
             items = parse_item_page(r.content.decode("utf-8", "replace"))
             for it in items:
-                it["category"] = cat  # サイト第1階層の大カテゴリー名を保存
+                it["category"] = cat
                 it["in_stock"] = True
 
             all_items.extend(items)
@@ -200,6 +255,11 @@ def crawl(session, only_series_ids=None):
             failed.append((sid, f"[{cat}] {sname}", repr(e)))
 
         time.sleep(SLEEP)
+
+    # オリジナル商品特設ページの巡回
+    orig_items = crawl_original_products(session)
+    if orig_items:
+        all_items.extend(orig_items)
 
     if failed:
         print(f"FAILED pages ({len(failed)}):", flush=True)
