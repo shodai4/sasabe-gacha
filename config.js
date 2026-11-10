@@ -10,7 +10,7 @@ window.APP_CONFIG = {
     SUPABASE_URL: "https://xxzmrdfroqefifgszgls.supabase.co",
 
     // Supabase 公開APIキー（anon public key: "eyJhbGci..."）
-    SUPABASE_ANON_KEY: "sb_publishable_sPah3iPPh-CesDyG0hxG_A_ZMu2VTkb",
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em1yZGZyb3FlZmxmZ3N6Z2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNzM2NTQsImV4cCI6MjEwOTg0OTY1NH0.To_PyTNca1yzXnxWMKGK9w4QF_1HZBCBB1xPKCrYZYo",
 
     // キャッシュ有効期間（ミリ秒: デフォルト6時間）
     CACHE_TTL_MS: 6 * 60 * 60 * 1000
