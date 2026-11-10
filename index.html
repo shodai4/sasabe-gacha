@@ -16,6 +16,25 @@
 
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            base: '#FFFFFF',
+                            main: '#3BA29B',
+                            sub: '#2BB3A3',
+                            dark: '#1F7068',
+                            accent: '#F0A732',
+                            accentHover: '#D99222',
+                            darkHover: '#16524C'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Lucide Icons -->
@@ -33,16 +52,16 @@
         body { font-family: 'Noto Sans JP', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+<body class="bg-[#FFFFFF] text-slate-800 min-h-screen flex flex-col justify-between">
 
     <!-- ヘッダー -->
-    <header class="bg-gradient-to-r from-rose-600 to-orange-500 text-white shadow-lg">
+    <header class="bg-gradient-to-r from-[#1F7068] via-[#3BA29B] to-[#2BB3A3] text-white shadow-md">
         <div class="max-w-4xl mx-auto px-4 py-6 flex flex-wrap justify-between items-center gap-4">
             <div>
-                <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full text-rose-100">非公式ファンツール</span>
+                <span class="text-xs font-semibold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full text-emerald-50">非公式ファンツール</span>
                 <h1 class="text-2xl md:text-3xl font-black tracking-tight mt-1">笹部画材 3,000円ガチャ 🎨</h1>
             </div>
-            <a href="https://www.sasabegazai.co.jp/" target="_blank" rel="noopener noreferrer" class="text-xs md:text-sm bg-white/10 hover:bg-white/20 transition px-3 py-1.5 rounded-lg border border-white/20 flex items-center gap-1">
+            <a href="https://www.sasabegazai.co.jp/" target="_blank" rel="noopener noreferrer" class="text-xs md:text-sm bg-white/10 hover:bg-white/20 transition px-3 py-1.5 rounded-lg border border-white/20 flex items-center gap-1 font-medium">
                 公式サイトを開く <i data-lucide="external-link" class="w-4 h-4"></i>
             </a>
         </div>
@@ -52,27 +71,27 @@
     <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
         
         <!-- コントロールエリア -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-8">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-[#2BB3A3]/25 mb-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                 <div>
-                    <label for="budgetInput" class="block text-xs font-bold text-slate-500 uppercase mb-2">ターゲット予算</label>
+                    <label for="budgetInput" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">ターゲット予算</label>
                     <div class="relative">
-                        <input type="number" id="budgetInput" value="3000" min="100" max="100000" step="100" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500 pr-12">
+                        <input type="number" id="budgetInput" value="3000" min="100" max="100000" step="100" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] pr-12 transition">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">円</span>
                     </div>
                 </div>
 
                 <div>
-                    <label for="modeSelect" class="block text-xs font-bold text-slate-500 uppercase mb-2">モード選択</label>
-                    <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
-                        <option value="budget">予算ギリギリ詰め合わせ</option>
-                        <option value="single">運試し！ぴったり単品狙い</option>
-                        <option value="3items">ちょうど3点チョイス</option>
+                    <label for="modeSelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">モード選択</label>
+                    <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
+                        <option value="single">🎯 運試し！ぴったり単品狙い（おつり少なめ）</option>
+                        <option value="3items">✨ ちょうど3点チョイス（おつり少なめ）</option>
+                        <option value="budget">🛒 予算ギリギリ詰め合わせ</option>
                     </select>
                 </div>
 
                 <div>
-                    <button id="spinBtn" onclick="spinGacha()" class="w-full bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 active:scale-95 transition-all duration-150 text-white font-black text-lg py-3.5 px-6 rounded-xl shadow-md shadow-rose-200 flex items-center justify-center gap-2">
+                    <button id="spinBtn" onclick="spinGacha()" class="w-full bg-[#F0A732] hover:bg-[#D99222] active:scale-95 transition-all duration-150 text-white font-black text-lg py-3.5 px-6 rounded-xl shadow-md shadow-[#F0A732]/30 flex items-center justify-center gap-2">
                         <i data-lucide="sparkles" class="w-5 h-5"></i> ガチャを回す！
                     </button>
                 </div>
@@ -82,7 +101,7 @@
         <!-- Google AdSense 広告枠（上部） -->
         <div class="my-6 text-center">
             <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">スポンサーリンク</div>
-            <div class="min-h-[100px] flex items-center justify-center bg-slate-100/70 border border-dashed border-slate-200 rounded-xl overflow-hidden">
+            <div class="min-h-[100px] flex items-center justify-center bg-slate-50 border border-dashed border-[#2BB3A3]/20 rounded-xl overflow-hidden">
                 <ins class="adsbygoogle"
                      style="display:block"
                      data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
@@ -96,34 +115,54 @@
         </div>
 
         <!-- ルーレット演出エリア -->
-        <div id="rouletteDisplay" class="hidden bg-slate-900 text-white rounded-2xl p-8 mb-8 text-center shadow-xl relative overflow-hidden">
-            <p class="text-rose-400 font-bold text-sm tracking-widest uppercase mb-2">チョイス中...</p>
-            <div id="slotItem" class="text-2xl md:text-3xl font-black min-h-[48px] flex items-center justify-center text-slate-200">
+        <div id="rouletteDisplay" class="hidden bg-[#1F7068] text-white rounded-2xl p-8 mb-8 text-center shadow-xl border-2 border-[#2BB3A3] relative overflow-hidden">
+            <p class="text-[#F0A732] font-bold text-sm tracking-widest uppercase mb-2">チョイス中...</p>
+            <div id="slotItem" class="text-2xl md:text-3xl font-black min-h-[48px] flex items-center justify-center text-emerald-50">
                 Supabaseから画材を選定しています...
             </div>
         </div>
 
         <!-- 結果表示エリア -->
         <div id="resultContainer" class="hidden space-y-6">
-            <div class="bg-gradient-to-br from-rose-50 to-orange-50 rounded-2xl p-6 border border-rose-100 flex flex-wrap justify-between items-center gap-4">
+            <div class="bg-gradient-to-br from-[#2BB3A3]/10 to-[#3BA29B]/5 rounded-2xl p-6 border border-[#2BB3A3]/30 flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <span class="text-xs font-bold text-rose-500 uppercase tracking-wider">合計金額</span>
-                    <div class="text-3xl md:text-4xl font-black text-slate-900">
+                    <span class="text-xs font-bold text-[#1F7068] uppercase tracking-wider">合計金額</span>
+                    <div class="text-3xl md:text-4xl font-black text-[#1F7068]">
                         <span id="totalPrice">0</span> <span class="text-xl font-bold text-slate-600">円</span>
                     </div>
                 </div>
                 <div>
                     <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">予算差額</span>
-                    <div id="budgetDiff" class="text-lg font-bold text-emerald-600">
-                        -0 円
+                    <div id="budgetDiff" class="text-lg font-bold text-[#F0A732]">
+                        おつり: 0 円
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="shareOnX()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-lg text-sm shadow-sm flex items-center gap-1.5 transition">
-                        <i data-lucide="share-2" class="w-4 h-4"></i> Xでシェア
-                    </button>
-                    <button onclick="spinGacha()" class="bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-2 rounded-lg border border-slate-200 text-sm shadow-sm flex items-center gap-1.5 transition">
+                    <button onclick="spinGacha()" class="bg-white hover:bg-slate-50 text-[#1F7068] font-bold px-4 py-2 rounded-lg border border-[#2BB3A3]/40 text-sm shadow-sm flex items-center gap-1.5 transition">
                         <i data-lucide="rotate-cw" class="w-4 h-4"></i> もう一度回す
+                    </button>
+                </div>
+            </div>
+
+            <!-- シェアボタンエリア -->
+            <div class="bg-white rounded-xl p-4 border border-[#2BB3A3]/20 shadow-sm flex flex-wrap items-center justify-between gap-3">
+                <span class="text-xs font-bold text-[#1F7068] flex items-center gap-1.5">
+                    <i data-lucide="share-2" class="w-4 h-4 text-[#3BA29B]"></i> 結果をシェアする:
+                </span>
+                <div class="flex flex-wrap items-center gap-2">
+                    <!-- X (Twitter) -->
+                    <button onclick="shareOnX()" class="bg-slate-900 hover:bg-black text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition">
+                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        Xでシェア
+                    </button>
+                    <!-- LINE -->
+                    <button onclick="shareOnLine()" class="bg-[#06C755] hover:bg-[#05B34C] text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition">
+                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.019 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.645 1.281-.542 6.911-4.069 9.428-6.967 1.739-1.907 2.589-3.854 2.589-5.29z"/></svg>
+                        LINEで送る
+                    </button>
+                    <!-- リンク / 結果コピー -->
+                    <button id="copyBtn" onclick="copyResult()" class="bg-[#3BA29B] hover:bg-[#1F7068] text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> 結果をコピー
                     </button>
                 </div>
             </div>
@@ -137,7 +176,7 @@
         <!-- Google AdSense 広告枠（下部） -->
         <div class="my-8 text-center">
             <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">スポンサーリンク</div>
-            <div class="min-h-[100px] flex items-center justify-center bg-slate-100/70 border border-dashed border-slate-200 rounded-xl overflow-hidden">
+            <div class="min-h-[100px] flex items-center justify-center bg-slate-50 border border-dashed border-[#2BB3A3]/20 rounded-xl overflow-hidden">
                 <ins class="adsbygoogle"
                      style="display:block"
                      data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
@@ -152,14 +191,14 @@
 
         <!-- データ管理・ステータス領域 -->
         <div class="mt-8 border-t border-slate-200 pt-6">
-            <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div class="bg-white rounded-xl border border-[#2BB3A3]/20 p-4 shadow-sm">
                 <div class="font-bold text-slate-700 flex justify-between items-center">
-                    <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-slate-400"></i> 画材データ連携ステータス</span>
-                    <button onclick="refreshData()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition font-bold text-slate-600">キャッシュ更新</button>
+                    <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-[#3BA29B]"></i> 画材データ連携ステータス</span>
+                    <button onclick="refreshData()" class="text-xs bg-slate-100 hover:bg-[#2BB3A3]/20 hover:text-[#1F7068] px-3 py-1.5 rounded-lg transition font-bold text-slate-600">キャッシュ更新</button>
                 </div>
                 <div class="mt-3 pt-3 border-t border-slate-100 text-sm space-y-1.5">
                     <p class="text-slate-500">
-                        読込済み画材数: <strong id="itemCount" class="text-slate-800">準備中...</strong> 件
+                        読込済み画材数: <strong id="itemCount" class="text-[#1F7068]">準備中...</strong> 件
                     </p>
                     <p class="text-xs text-slate-400">※GitHub Actionsの自動スクレイピングによってSupabaseに蓄積された最新商品データ（約1.8万件）から選定されます。</p>
                 </div>
@@ -169,7 +208,7 @@
     </main>
 
     <!-- フッター -->
-    <footer class="bg-slate-100 border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    <footer class="bg-slate-50 border-t border-slate-200 py-6 text-center text-xs text-slate-400">
         <div class="max-w-4xl mx-auto px-4">
             <p>当アプリは笹部洋画材料店様のファンによる非公式ファン制作ツールです。</p>
             <p class="mt-1">価格・在庫等の最新情報は必ず笹部画材公式サイトにてご確認ください。</p>
@@ -285,7 +324,9 @@
                     { name: "ホルベイン ペインティングナイフ No.1", price: 1100, category: "ナイフ", url: "https://www.sasabegazai.co.jp/" },
                     { name: "クサカベ テレピン 55ml", price: 680, category: "画用液", url: "https://www.sasabegazai.co.jp/" },
                     { name: "クレサン 張りキャンバス F4号", price: 850, category: "キャンバス", url: "https://www.sasabegazai.co.jp/" },
-                    { name: "ホルベイン オイルパレット 楕円型", price: 1980, category: "パレット", url: "https://www.sasabegazai.co.jp/" }
+                    { name: "ホルベイン オイルパレット 楕円型", price: 1980, category: "パレット", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "マツダ クイックオイルパレット 特大", price: 2850, category: "パレット", url: "https://www.sasabegazai.co.jp/" },
+                    { name: "文房堂 アーチスト油絵具 170ml ホワイト", price: 2980, category: "油絵具", url: "https://www.sasabegazai.co.jp/" }
                 ];
                 countEl.innerText = `${items.length} (デモサンプルモード)`;
             }
@@ -353,35 +394,117 @@
             }, 1200);
         }
 
-        // ガチャ計算ロジック
+        // ==========================================
+        // ガチャ計算ロジック（要望対応：おつり最小化＆ランダム性維持）
+        // ==========================================
         function calculateResult(budget, mode) {
-            const shuffled = [...items].sort(() => 0.5 - Math.random());
-            const selected = [];
-            let currentTotal = 0;
+            if (!items || items.length === 0) return [];
 
-            if (mode === 'budget') {
-                for (let i = 0; i < shuffled.length && selected.length < 20; i++) {
-                    const item = shuffled[i];
-                    if (currentTotal + item.price <= budget) {
-                        selected.push(item);
-                        currentTotal += item.price;
-                    }
-                }
-            } else if (mode === 'single') {
-                const affordable = items.filter(i => i.price <= budget);
-                if (affordable.length > 0) {
-                    selected.push(affordable[Math.floor(Math.random() * affordable.length)]);
-                }
-            } else if (mode === '3items') {
-                for (let i = 0; i < shuffled.length && selected.length < 3; i++) {
-                    const item = shuffled[i];
-                    if (currentTotal + item.price <= budget) {
-                        selected.push(item);
-                        currentTotal += item.price;
-                    }
+            // 1. ピッタリ単品狙い（おつりを少なく、ランダム性も残す）
+            if (mode === 'single') {
+                const affordable = items.filter(i => Number(i.price) <= budget);
+                if (affordable.length === 0) return [];
+
+                // 価格の高い順にソート
+                affordable.sort((a, b) => Number(b.price) - Number(a.price));
+
+                // 予算の75%〜100%の価格帯にある商品を抽出
+                const highTier = affordable.filter(i => Number(i.price) >= budget * 0.75);
+                if (highTier.length >= 3) {
+                    // 十分な候補があれば、高価格帯からランダム抽出（おつり最大でも25%以内）
+                    return [highTier[Math.floor(Math.random() * highTier.length)]];
+                } else if (affordable.length >= 10) {
+                    // 候補が少なければ、上位10件からランダム抽出
+                    const topCandidates = affordable.slice(0, 10);
+                    return [topCandidates[Math.floor(Math.random() * topCandidates.length)]];
+                } else {
+                    return [affordable[Math.floor(Math.random() * affordable.length)]];
                 }
             }
-            return selected;
+
+            // 2. ちょうど3点チョイス（おつりを少なく、ランダム性も残す）
+            if (mode === '3items') {
+                const affordable = items.filter(i => Number(i.price) <= budget);
+                if (affordable.length < 3) return affordable.slice(0, 3);
+
+                // モンテカルロサンプリング：120回ランダム試行して、3点合計が予算以内の組み合わせを収集
+                const combinations = [];
+
+                for (let iter = 0; iter < 120; iter++) {
+                    const shuffled = [...affordable].sort(() => 0.5 - Math.random());
+                    const sample = [];
+                    let sum = 0;
+
+                    for (let item of shuffled) {
+                        const p = Number(item.price);
+                        if (sample.length < 3 && sum + p <= budget) {
+                            sample.push(item);
+                            sum += p;
+                        }
+                    }
+
+                    if (sample.length === 3) {
+                        combinations.push({ items: sample, total: sum, diff: budget - sum });
+                    }
+                }
+
+                if (combinations.length > 0) {
+                    // 差額（おつり）が少ない順にソート
+                    combinations.sort((a, b) => a.diff - b.diff);
+
+                    // 最小おつりから、差額が「最小おつり + 予算の10%」以内の上位候補グループからランダム選択
+                    const minDiff = combinations[0].diff;
+                    const topGroup = combinations.filter(c => c.diff <= Math.max(minDiff + budget * 0.1, minDiff + 200));
+                    const picked = topGroup[Math.floor(Math.random() * Math.min(topGroup.length, 8))];
+                    return picked.items;
+                }
+
+                // 3点揃わなかった場合のフォールバック（貪欲法）
+                const fallback = [];
+                let fSum = 0;
+                const shuffled = [...affordable].sort(() => 0.5 - Math.random());
+                for (let item of shuffled) {
+                    const p = Number(item.price);
+                    if (fallback.length < 3 && fSum + p <= budget) {
+                        fallback.push(item);
+                        fSum += p;
+                    }
+                }
+                return fallback;
+            }
+
+            // 3. 予算ギリギリ詰め合わせ（最大20点・残り予算隙間埋め付き）
+            if (mode === 'budget') {
+                const shuffled = [...items].sort(() => 0.5 - Math.random());
+                const selected = [];
+                let currentTotal = 0;
+
+                for (let item of shuffled) {
+                    if (selected.length >= 20) break;
+                    const p = Number(item.price);
+                    if (currentTotal + p <= budget) {
+                        selected.push(item);
+                        currentTotal += p;
+                    }
+                }
+
+                // 隙間埋め：残り予算で買える商品があれば最後に追加探索しておつりを最小化
+                const remaining = budget - currentTotal;
+                if (remaining > 0 && selected.length < 20) {
+                    const fillers = items.filter(i => {
+                        const p = Number(i.price);
+                        return p <= remaining && !selected.some(s => s.name === i.name);
+                    });
+                    if (fillers.length > 0) {
+                        fillers.sort((a, b) => Number(b.price) - Number(a.price));
+                        selected.push(fillers[0]);
+                    }
+                }
+
+                return selected;
+            }
+
+            return [];
         }
 
         // 結果描画（安全なDOM生成・XSS対策）
@@ -407,21 +530,21 @@
                 const safeUrl = sanitizeUrl(item.url);
 
                 const card = document.createElement('div');
-                card.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between gap-3 hover:shadow-md transition";
+                card.className = "bg-white p-4 rounded-xl border border-[#2BB3A3]/20 shadow-sm flex flex-col justify-between gap-3 hover:shadow-md hover:border-[#2BB3A3]/50 transition";
                 
                 const linkButton = safeUrl ? `
-                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-xs bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
                         商品を見る <i data-lucide="external-link" class="w-3 h-3"></i>
                     </a>
                 ` : '';
 
                 card.innerHTML = `
                     <div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">${safeCategory}</span>
+                        <span class="text-[10px] font-bold text-[#3BA29B] uppercase tracking-wider block mb-1">${safeCategory}</span>
                         <h4 class="font-bold text-slate-800 text-sm md:text-base leading-snug">${safeName}</h4>
                     </div>
                     <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-                        <span class="font-black text-rose-500 text-base md:text-lg">¥${price.toLocaleString()}</span>
+                        <span class="font-black text-[#1F7068] text-base md:text-lg">¥${price.toLocaleString()}</span>
                         ${linkButton}
                     </div>
                 `;
@@ -436,14 +559,52 @@
             lucide.createIcons();
         }
 
-        // X（Twitter）シェア機能
-        function shareOnX() {
+        // ==========================================
+        // SNSシェア機能群（X, LINE, クリップボードコピー）
+        // ==========================================
+        function getShareText() {
             const total = document.getElementById('totalPrice').textContent;
             const budget = document.getElementById('budgetInput').value;
-            const text = `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円】ガチャを回しました！\n合計金額: ¥${total}\n\n笹部画材 3,000円ガチャ＆ルーレット\n#笹部画材 #画材ガチャ #笹部画材ガチャ`;
+            const diff = document.getElementById('budgetDiff').textContent.replace('おつり: ', '').trim();
+            return `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円】ガチャを回しました！\n合計: ¥${total}（おつり: ${diff}）\n\n笹部画材 3,000円ガチャ＆ルーレット\n#笹部画材 #画材ガチャ #笹部画材ガチャ`;
+        }
+
+        // X (Twitter) シェア
+        function shareOnX() {
+            const text = getShareText();
             const url = window.location.href;
             const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
             window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // LINE シェア
+        function shareOnLine() {
+            const text = getShareText();
+            const url = window.location.href;
+            const shareUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text + '\n' + url)}`;
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // 結果・URLのクリップボードコピー
+        async function copyResult() {
+            const copyBtn = document.getElementById('copyBtn');
+            const text = `${getShareText()}\n${window.location.href}`;
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> コピー完了！`;
+                copyBtn.classList.remove('bg-[#3BA29B]', 'hover:bg-[#1F7068]');
+                copyBtn.classList.add('bg-emerald-600');
+                lucide.createIcons();
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHtml;
+                    copyBtn.classList.remove('bg-emerald-600');
+                    copyBtn.classList.add('bg-[#3BA29B]', 'hover:bg-[#1F7068]');
+                    lucide.createIcons();
+                }, 2000);
+            } catch (err) {
+                alert('クリップボードへのコピーに失敗しました。');
+            }
         }
     </script>
 </body>
