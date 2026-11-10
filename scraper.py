@@ -1,8 +1,8 @@
-"""笹部洋画材料店 商品スクレイパー (v2)
+"""笹部洋画材料店 商品スクレイパー (v2.1)
 
-- 笹部画材（sasabegazai.co.jp）のブランド・シリーズ一覧（listview/item.html?id=...）を巡回
-- 実商品と実売価格・定価を正しく抽出し、Supabase の products テーブルへ Upsert
-- 負荷軽減のためリクエスト間隔を設定し、0件時はDB更新をスキップする品質ゲート付き
+- 笹部画材（sasabegazai.co.jp）の全ブランド・シリーズ一覧（244シリーズ）を巡回
+- 実商品と実売価格・定価を抽出し、Supabase の products テーブルへ一括 Upsert
+- サーバー負荷軽減のため 0.5s 待機、0件時は安全停止
 """
 import os
 import re
@@ -178,24 +178,28 @@ def update_supabase(items):
         })
 
     print(f"Upserting {len(rows)} products to Supabase...", flush=True)
-    CHUNK_SIZE = 50
+    CHUNK_SIZE = 100
     success_count = 0
+    error_count = 0
     for i in range(0, len(rows), CHUNK_SIZE):
         chunk = rows[i:i + CHUNK_SIZE]
         try:
             supabase.table("products").upsert(chunk, on_conflict="url").execute()
             success_count += len(chunk)
+            if (i // CHUNK_SIZE) % 10 == 0:
+                print(f"Progress: {success_count}/{len(rows)} upserted...", flush=True)
         except Exception as e:
+            error_count += len(chunk)
             print(f"Error upserting chunk {i}~{i+len(chunk)}: {e}", flush=True)
-            for row in chunk:
-                try:
-                    supabase.table("products").upsert(row, on_conflict="url").execute()
-                    success_count += 1
-                except Exception as inner_e:
-                    print(f"Error upserting row {row.get('url')}: {inner_e}", flush=True)
+            # UNIQUE制約エラー等の場合は無駄な1件リトライをせず即座に中断
+            if "there is no unique or exclusion constraint" in str(e):
+                print("\n[CRITICAL] Supabaseの products テーブルの url 列に UNIQUE 制約が必要です！", flush=True)
+                print("Supabase SQL Editorで以下を実行してください:", flush=True)
+                print("  ALTER TABLE products ADD CONSTRAINT products_url_unique UNIQUE (url);\n", flush=True)
+                return False
 
-    print(f"Successfully upserted {success_count}/{len(rows)} products in Supabase.", flush=True)
-    return success_count == len(rows)
+    print(f"Completed: {success_count} succeeded, {error_count} failed out of {len(rows)} products.", flush=True)
+    return success_count > 0 and error_count == 0
 
 
 def main():
@@ -203,8 +207,11 @@ def main():
     session = requests.Session()
     session.headers.update(HEADERS)
 
+    start_time = time.time()
     items, failed = crawl(session, only)
-    print(f"Total products parsed: {len(items)}", flush=True)
+    elapsed = time.time() - start_time
+    print(f"Total products parsed: {len(items)} (Crawl time: {elapsed:.1f}s)", flush=True)
+
     if not items:
         print("No products parsed — aborting without touching Supabase.", flush=True)
         return 1
