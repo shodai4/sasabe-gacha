@@ -115,44 +115,86 @@ def parse_item_page(html):
     for blk in soup.select("table.dpItemTable"):
         title_el = blk.select_one("h2")
         series = title_el.get_text(" ", strip=True) if title_el else ""
-        sizes = [td.get_text(" ", strip=True) for td in blk.select("tr td.item-001")]
 
-        # パターンA: 色 × サイズの表形式
-        for tr in blk.select("tr"):
-            namecell = tr.select_one("td table.dpSizeTableName")
-            if not namecell:
-                continue
-            color_el = namecell.select_one("td.item-003 a") or namecell.select_one("td.item-003")
-            color = color_el.get_text(" ", strip=True) if color_el else ""
-            cells = [td for td in tr.find_all("td", recursive=False) if not td.find("table")]
+        # パターンA: 色 × サイズの表形式 (dpSizeTable)
+        size_table = blk.select_one("table.dpSizeTable")
+        if size_table:
+            rows = size_table.find_all("tr", recursive=False)
+            if rows:
+                header_tds = rows[0].find_all("td", recursive=False)
+                sizes = [td.get_text(" ", strip=True) for td in header_tds]
+                for tr in rows[1:]:
+                    tds = tr.find_all("td", recursive=False)
+                    if not tds:
+                        continue
+                    namecell = tds[0].select_one("table.dpSizeTableName")
+                    if not namecell:
+                        continue
 
-            for i, td in enumerate(cells):
-                p5 = td.select_one("p.item-005")  # 実売価格
-                price = parse_money(p5.get_text()) if p5 else None
-                if not price:
-                    continue
-                pid = extract_product_id(td)
-                size = sizes[i] if i < len(sizes) else ""
-                name = " ".join(x for x in (series, color, size) if x)
-                products.append({
-                    "name": name[:200],
-                    "price": price,
-                    "url": f"{BASE_URL}pop.html?id={pid}" if pid else f"{BASE_URL}item_{pid}",
-                })
+                    # 色番号・記号（例: A-001, W-195, M1-1 など商品名の左/上にある記号）
+                    code_el = namecell.select_one("td.item-002")
+                    code = code_el.get_text(" ", strip=True) if code_el else ""
 
-        # パターンB: 1商品1行のリスト形式
-        for tr in blk.select("tr"):
-            p10 = tr.select_one("p.item-010")  # 実売価格
-            if not p10:
-                continue
-            price = parse_money(p10.get_text())
+                    # 色名・商品名（例: クリムソンレーキ, シルバー ホワイト など）
+                    color_el = namecell.select_one("td.item-003 a") or namecell.select_one("td.item-003")
+                    color = color_el.get_text(" ", strip=True) if color_el else ""
+
+                    item_label = f"{code} {color}".strip()
+
+                    for col_idx in range(1, min(len(tds), len(sizes))):
+                        td = tds[col_idx]
+                        p5 = td.select_one("p.item-005")  # 実売価格
+                        price = parse_money(p5.get_text()) if p5 else None
+                        if not price:
+                            continue
+
+                        pid = extract_product_id(td)
+                        if not pid:
+                            continue
+
+                        size = sizes[col_idx] if col_idx < len(sizes) else ""
+                        name = " ".join(x for x in (series, item_label, size) if x)
+                        name = re.sub(r"\s+", " ", name).strip()
+
+                        products.append({
+                            "name": name[:200],
+                            "price": price,
+                            "url": f"{BASE_URL}pop.html?id={pid}",
+                        })
+
+        # パターンB: 単品・リスト形式 (dpTanTable / dpTanTableName)
+        for tan_table in blk.select("table.dpTanTableName"):
+            # 色番号・商品記号（例: E-010, TG-H など）
+            code_el = tan_table.select_one("p.item-008")
+            code = code_el.get_text(" ", strip=True) if code_el else ""
+
+            # 商品名・色名（例: カドオレンジレッドシェード, MAXミニタッカーTG-H など）
+            name_el = tan_table.select_one("p.item-012 a") or tan_table.select_one("p.item-012")
+            item_name = name_el.get_text(" ", strip=True) if name_el else ""
+
+            # 規格・容量・サイズ（例: 20ml, ミニタッカー など）
+            size_el = tan_table.select_one("p.item-007")
+            size = size_el.get_text(" ", strip=True) if size_el else ""
+
+            # 実売価格 (p.item-010) または 定価 (p.item-009)
+            p10 = tan_table.select_one("p.item-010")
+            price = parse_money(p10.get_text()) if p10 else None
+            if not price:
+                p9 = tan_table.select_one("p.item-009")
+                price = parse_money(p9.get_text()) if p9 else None
             if not price:
                 continue
-            pid = extract_product_id(tr)
+
+            pid = extract_product_id(tan_table)
             if not pid:
                 continue
+
+            item_label = f"{code} {item_name}".strip()
+            name = " ".join(x for x in (series, item_label, size) if x)
+            name = re.sub(r"\s+", " ", name).strip()
+
             products.append({
-                "name": series[:200],
+                "name": name[:200],
                 "price": price,
                 "url": f"{BASE_URL}pop.html?id={pid}",
             })
