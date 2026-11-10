@@ -1,7 +1,8 @@
-"""笹部洋画材料店 商品スクレイパー (v2.1)
+"""笹部洋画材料店 商品スクレイパー (v3.0)
 
 - 笹部画材（sasabegazai.co.jp）の全ブランド・シリーズ一覧（244シリーズ）を巡回
-- 実商品と実売価格・定価を抽出し、Supabase の products テーブルへ一括 Upsert
+- サイトトップの第1階層大カテゴリー（油絵具・ピグメント、画溶液・クリーナー等）を抽出し商品に紐付け
+- 実商品と実売価格を抽出し、Supabase の products テーブルへ一括 Upsert
 - サーバー負荷軽減のため 0.5s 待機、0件時は安全停止
 """
 import os
@@ -25,36 +26,79 @@ HEADERS = {
 SLEEP = 0.5
 
 
-def money(text):
+def parse_money(text):
+    """¥や￥付きの金額文字列から数値を抽出"""
     m = re.search(r"[￥\\]\s*([\d,]+)", text or "")
     return int(m.group(1).replace(",", "")) if m else None
 
 
-def series_links(session):
-    """トップページのサイドバーから「シリーズ（ブランド）ページ」のIDを集める。"""
+def fetch_series_and_categories(session):
+    """トップページのサイドバーから「大カテゴリー名」と「シリーズID・シリーズ名」を取得する。
+
+    戻り値:
+        dict: {
+            "1101": {"category": "油絵具・ピグメント", "series": "【国産】 クサカベ"},
+            ...
+        }
+    """
     try:
         resp = session.get(BASE_URL, timeout=20)
         if resp.status_code != 200:
             print(f"Failed to fetch top page: HTTP {resp.status_code}", flush=True)
             return {}
+
         html = resp.content.decode("utf-8", "replace")
         soup = BeautifulSoup(html, "html.parser")
         out = {}
-        for a in soup.select("#sideNav .midCategoryBtn a"):
-            m = re.search(r"id=(\d+)", a.get("href", ""))
-            if m:
-                out[m.group(1)] = a.get_text(" ", strip=True).strip()
+
+        # 1. BeautifulSoup による DOM 走査
+        for li in soup.select("#sideNav ul.categoryBtn > li"):
+            main_a = li.select_one("a.categoryBtn")
+            if not main_a:
+                continue
+            span = main_a.select_one("span")
+            main_cat = span.get_text(strip=True) if span else main_a.get_text(strip=True)
+            main_cat = re.sub(r"\s+", " ", main_cat).strip()
+
+            for mid_a in li.select("ul.midCategoryBtn a"):
+                m = re.search(r"id=(\d+)", mid_a.get("href", ""))
+                if m:
+                    sid = m.group(1)
+                    sname = re.sub(r"\s+", " ", mid_a.get_text(" ", strip=True)).strip()
+                    out[sid] = {
+                        "category": main_cat,
+                        "series": sname,
+                    }
+
+        # 2. 念のための正規表現フォールバック（マークアップ微差用）
+        if len(out) < 200:
+            print(f"Warning: BeautifulSoup found only {len(out)} series. Running regex fallback...", flush=True)
+            pattern = re.compile(
+                r"<a href=\"category\.html\?id=\d+\"[^>]*>.*?<span>(.*?)</span>.*?<ul class=\"midCategoryBtn\"[^>]*>(.*?)</ul>",
+                re.DOTALL
+            )
+            matches = pattern.findall(html)
+            for cat_name, mid_html in matches:
+                cat = re.sub(r"\s+", " ", cat_name).strip()
+                for sid, sname in re.findall(r"href=\"item\.html\?id=(\d+)\">([^<]+)</a>", mid_html):
+                    if sid not in out:
+                        out[sid] = {
+                            "category": cat,
+                            "series": re.sub(r"\s+", " ", sname).strip(),
+                        }
+
         return out
     except Exception as e:
         print(f"Error fetching series links: {e}", flush=True)
         return {}
 
 
-def product_id(row):
-    sel = row.select_one('select[name^="id_"]')
+def extract_product_id(element):
+    """HTML要素から商品ID（ポップアップ用）を抽出"""
+    sel = element.select_one('select[name^="id_"]')
     if sel:
         return sel["name"][3:]
-    a = row.select_one('a.popup[href*="id="]')
+    a = element.select_one('a.popup[href*="id="]')
     if a:
         m = re.search(r"id=(\d+)", a["href"])
         if m:
@@ -62,7 +106,8 @@ def product_id(row):
     return ""
 
 
-def parse(html):
+def parse_item_page(html):
+    """シリーズ詳細ページから個別商品の一覧を抽出"""
     soup = BeautifulSoup(html, "html.parser")
     products = []
 
@@ -71,7 +116,7 @@ def parse(html):
         series = title_el.get_text(" ", strip=True) if title_el else ""
         sizes = [td.get_text(" ", strip=True) for td in blk.select("tr td.item-001")]
 
-        # --- A) 色×サイズの表 ---
+        # パターンA: 色 × サイズの表形式
         for tr in blk.select("tr"):
             namecell = tr.select_one("td table.dpSizeTableName")
             if not namecell:
@@ -79,44 +124,41 @@ def parse(html):
             color_el = namecell.select_one("td.item-003 a") or namecell.select_one("td.item-003")
             color = color_el.get_text(" ", strip=True) if color_el else ""
             cells = [td for td in tr.find_all("td", recursive=False) if not td.find("table")]
+
             for i, td in enumerate(cells):
-                p5 = td.select_one("p.item-005")
-                p4 = td.select_one("p.item-004")
-                price = money(p5.get_text()) if p5 else None
+                p5 = td.select_one("p.item-005")  # 実売価格
+                price = parse_money(p5.get_text()) if p5 else None
                 if not price:
                     continue
-                pid = product_id(td)
+                pid = extract_product_id(td)
                 size = sizes[i] if i < len(sizes) else ""
                 name = " ".join(x for x in (series, color, size) if x)
-                products.append(
-                    {
-                        "name": name[:200],
-                        "price": price,
-                        "url": f"{BASE_URL}pop.html?id={pid}" if pid else f"{BASE_URL}item_{pid}",
-                    }
-                )
+                products.append({
+                    "name": name[:200],
+                    "price": price,
+                    "url": f"{BASE_URL}pop.html?id={pid}" if pid else f"{BASE_URL}item_{pid}",
+                })
 
-        # --- B) 1商品1行 ---
+        # パターンB: 1商品1行のリスト形式
         for tr in blk.select("tr"):
-            p10 = tr.select_one("p.item-010")
+            p10 = tr.select_one("p.item-010")  # 実売価格
             if not p10:
                 continue
-            price = money(p10.get_text())
+            price = parse_money(p10.get_text())
             if not price:
                 continue
-            pid = product_id(tr)
+            pid = extract_product_id(tr)
             if not pid:
                 continue
-            products.append(
-                {
-                    "name": series[:200],
-                    "price": price,
-                    "url": f"{BASE_URL}pop.html?id={pid}",
-                }
-            )
+            products.append({
+                "name": series[:200],
+                "price": price,
+                "url": f"{BASE_URL}pop.html?id={pid}",
+            })
 
-    # url 重複を落とす
-    seen, unique = set(), []
+    # URL単位での重複除外
+    seen = set()
+    unique = []
     for p in products:
         if p["url"] in seen:
             continue
@@ -125,37 +167,50 @@ def parse(html):
     return unique
 
 
-def crawl(session, only=None):
-    series = series_links(session)
-    print(f"Found {len(series)} series pages to crawl.", flush=True)
-    all_items, failed = [], []
-    for n, (sid, label) in enumerate(sorted(series.items()), 1):
-        if only and sid not in only:
+def crawl(session, only_series_ids=None):
+    """全シリーズを巡回して商品リストを収集"""
+    series_map = fetch_series_and_categories(session)
+    print(f"Found {len(series_map)} series pages across categories to crawl.", flush=True)
+
+    all_items = []
+    failed = []
+
+    for n, (sid, info) in enumerate(sorted(series_map.items()), 1):
+        if only_series_ids and sid not in only_series_ids:
             continue
+
+        cat = info["category"]
+        sname = info["series"]
         url = f"{BASE_URL}listview/item.html?id={sid}"
+
         try:
             r = session.get(url, timeout=40)
             if r.status_code != 200:
-                failed.append((sid, label, f"HTTP {r.status_code}"))
+                failed.append((sid, f"[{cat}] {sname}", f"HTTP {r.status_code}"))
                 continue
-            items = parse(r.content.decode("utf-8", "replace"))
+
+            items = parse_item_page(r.content.decode("utf-8", "replace"))
             for it in items:
-                it["category"] = label
+                it["category"] = cat  # サイト第1階層の大カテゴリー名を保存
                 it["in_stock"] = True
+
             all_items.extend(items)
-            print(f"[{n}/{len(series)}] {sid} {label}: {len(items)} items", flush=True)
+            print(f"[{n}/{len(series_map)}] {sid} [{cat}] {sname}: {len(items)} items", flush=True)
         except Exception as e:
-            failed.append((sid, label, repr(e)))
+            failed.append((sid, f"[{cat}] {sname}", repr(e)))
+
         time.sleep(SLEEP)
 
     if failed:
         print(f"FAILED pages ({len(failed)}):", flush=True)
         for f in failed[:20]:
             print("  ", f, flush=True)
+
     return all_items, failed
 
 
 def update_supabase(items):
+    """Supabase の products テーブルへ一括 Upsert"""
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_KEY")
     if not supabase_url or not supabase_key:
@@ -167,20 +222,22 @@ def update_supabase(items):
         return True
 
     supabase: Client = create_client(supabase_url, supabase_key)
-    rows = []
-    for it in items:
-        rows.append({
+    rows = [
+        {
             "name": it["name"],
             "price": it["price"],
             "category": it.get("category", "画材"),
             "url": it["url"],
             "in_stock": it.get("in_stock", True),
-        })
+        }
+        for it in items
+    ]
 
     print(f"Upserting {len(rows)} products to Supabase...", flush=True)
     CHUNK_SIZE = 100
     success_count = 0
     error_count = 0
+
     for i in range(0, len(rows), CHUNK_SIZE):
         chunk = rows[i:i + CHUNK_SIZE]
         try:
@@ -191,7 +248,6 @@ def update_supabase(items):
         except Exception as e:
             error_count += len(chunk)
             print(f"Error upserting chunk {i}~{i+len(chunk)}: {e}", flush=True)
-            # UNIQUE制約エラー等の場合は無駄な1件リトライをせず即座に中断
             if "there is no unique or exclusion constraint" in str(e):
                 print("\n[CRITICAL] Supabaseの products テーブルの url 列に UNIQUE 制約が必要です！", flush=True)
                 print("Supabase SQL Editorで以下を実行してください:", flush=True)

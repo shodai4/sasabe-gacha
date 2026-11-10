@@ -42,8 +42,7 @@
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Google AdSense スクリプトタグ -->
-    <!-- ※ AdSense審査通過後、ご自身のパブリッシャーID（ca-pub-XXXXXXXXXXXXXXXX）に書き換えてください -->
+    <!-- Google AdSense スクリプトタグ（審査通過後にパブリッシャーIDを書き換えてください） -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
          crossorigin="anonymous"></script>
 
@@ -82,214 +81,141 @@
                 </div>
 
                 <div>
-                    <label for="categorySelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">カテゴリ絞り込み</label>
+                    <label for="categorySelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">カテゴリー絞り込み</label>
                     <select id="categorySelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 font-bold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
-                        <option value="all">🎨 すべての画材</option>
-                        <option value="oil">🎨 油絵具・油彩用品</option>
-                        <option value="watercolor">💧 水彩・インク・顔彩</option>
-                        <option value="acrylic">✨ アクリル絵具・メディウム</option>
-                        <option value="brush">🖌️ 筆・刷毛・ブラシ</option>
-                        <option value="canvas">🖼️ キャンバス・木枠・パネル</option>
-                        <option value="medium">🧴 画溶液・クリーナー・用品</option>
-                        <option value="paper">📜 スケッチブック・紙・ボード</option>
-                        <option value="pastel">🖍️ パステル・色鉛筆・デッサン</option>
-                        <option value="frame">🖼️ 額縁・仮縁</option>
+                        <option value="all">🎨 すべてのカテゴリー（読込中...）</option>
                     </select>
                 </div>
 
                 <div>
-                    <label for="modeSelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">モード選択</label>
-                    <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 font-bold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
-                        <option value="budget">🛒 予算ギリギリ詰め合わせ（最大99点）</option>
+                    <label for="modeSelect" class="block text-xs font-bold text-[#1F7068] uppercase mb-2">ガチャモード</label>
+                    <select id="modeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-[#3BA29B] focus:border-[#3BA29B] transition">
                         <option value="single">🎯 運試し！ぴったり単品狙い</option>
-                        <option value="3items">✨ ちょうど3点チョイス</option>
+                        <option value="3items">🎁 ちょうど3点チョイス</option>
+                        <option value="budget" selected>🛒 予算ギリギリ詰め合わせ</option>
                     </select>
                 </div>
 
                 <div>
-                    <button id="spinBtn" onclick="spinGacha()" class="w-full bg-[#F0A732] hover:bg-[#D99222] active:scale-95 transition-all duration-150 text-white font-black text-lg py-3 px-6 rounded-xl shadow-md shadow-[#F0A732]/30 flex items-center justify-center gap-2">
-                        <i data-lucide="sparkles" class="w-5 h-5"></i> 回す！
+                    <button id="spinBtn" onclick="spinGacha()" class="w-full bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-lg py-3 px-6 rounded-xl shadow-lg shadow-amber-500/25 transition duration-150 flex justify-center items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        <span>ガチャを回す！</span>
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Google AdSense 広告枠（上部） -->
-        <div class="my-6 text-center">
-            <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">スポンサーリンク</div>
-            <div class="min-h-[100px] flex items-center justify-center bg-slate-50 border border-dashed border-[#2BB3A3]/20 rounded-xl overflow-hidden">
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                     data-ad-slot="XXXXXXXXXX"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
-                </script>
+            <!-- ステータス表示 -->
+            <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center text-xs text-slate-400 gap-2">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    読み込み商品数: <span id="itemCount" class="font-bold text-slate-600">取得中...</span>
+                </span>
+                <span class="flex items-center gap-1 text-[11px]">
+                    ※価格・在庫は最新データと異なる場合があります
+                    <button onclick="refreshData()" title="データを再読み込み" class="text-[#3BA29B] hover:text-[#1F7068] ml-1 underline font-medium">更新</button>
+                </span>
             </div>
         </div>
 
-        <!-- ルーレット演出エリア -->
-        <div id="rouletteDisplay" class="hidden bg-[#1F7068] text-white rounded-2xl p-8 mb-8 text-center shadow-xl border-2 border-[#2BB3A3] relative overflow-hidden">
-            <p class="text-[#F0A732] font-bold text-sm tracking-widest uppercase mb-2">チョイス中...</p>
-            <div id="slotItem" class="text-2xl md:text-3xl font-black min-h-[48px] flex items-center justify-center text-emerald-50">
-                Supabaseから画材を選定しています...
-            </div>
+        <!-- ルーレット演出エリア（アニメーション中のみ表示） -->
+        <div id="rouletteDisplay" class="hidden mb-8 text-center bg-[#1F7068] text-white py-8 px-4 rounded-2xl shadow-inner border border-[#2BB3A3]">
+            <p class="text-xs uppercase tracking-widest text-[#2BB3A3] font-bold mb-2 animate-pulse">Selecting Art Supplies...</p>
+            <div id="slotItem" class="text-xl md:text-2xl font-black truncate max-w-lg mx-auto"></div>
+        </div>
+
+        <!-- 広告スペース1（上部） -->
+        <div class="my-6 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl p-2 min-h-[90px] flex items-center justify-center">
+            <span class="text-xs text-slate-300 font-medium">スポンサーリンク</span>
         </div>
 
         <!-- 結果表示エリア -->
-        <div id="resultContainer" class="hidden space-y-6">
-            <!-- 結果要約ヘッダー -->
-            <div class="bg-gradient-to-br from-[#2BB3A3]/10 to-[#3BA29B]/5 rounded-2xl p-6 border border-[#2BB3A3]/30 flex flex-wrap justify-between items-center gap-4">
-                <div>
-                    <span class="text-xs font-bold text-[#1F7068] uppercase tracking-wider">合計金額</span>
-                    <div class="text-3xl md:text-4xl font-black text-[#1F7068]">
-                        <span id="totalPrice">0</span> <span class="text-xl font-bold text-slate-600">円</span>
+        <div id="resultContainer" class="hidden">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-[#2BB3A3]/25 mb-8">
+                <div class="flex flex-wrap justify-between items-center pb-4 mb-6 border-b border-slate-100 gap-4">
+                    <div>
+                        <span class="text-xs font-bold text-[#3BA29B] uppercase tracking-wider">Gacha Result</span>
+                        <h2 class="text-xl font-black text-slate-800">選ばれた画材セット</h2>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-slate-400 uppercase">合計金額</div>
+                        <div class="text-2xl md:text-3xl font-black text-[#1F7068]">
+                            ¥<span id="totalPrice">0</span>
+                        </div>
+                        <div id="budgetDiff" class="text-xs font-semibold text-[#2BB3A3] mt-0.5">おつり: 0 円</div>
                     </div>
                 </div>
-                <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">予算差額</span>
-                    <div id="budgetDiff" class="text-lg font-bold text-[#F0A732]">
-                        おつり: 0 円
+
+                <!-- 案内・注意通知（予算不足時や高額時など） -->
+                <div id="resultNotice" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium flex items-center gap-2"></div>
+
+                <!-- 商品カード一覧 -->
+                <div id="itemList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+
+                <!-- シェア・再抽選ボタン群 -->
+                <div class="pt-4 border-t border-slate-100 flex flex-wrap justify-between items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- X (Twitter) シェア -->
+                        <button onclick="shareOnX()" class="bg-black hover:bg-slate-800 text-white font-bold text-xs py-2 px-3.5 rounded-lg flex items-center gap-1.5 transition">
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            ポスト
+                        </button>
+                        <!-- LINE で送る -->
+                        <button onclick="shareOnLine()" class="bg-[#06C755] hover:bg-[#05a847] text-white font-bold text-xs py-2 px-3.5 rounded-lg flex items-center gap-1.5 transition">
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.498.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .627.285.627.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                            LINEで送る
+                        </button>
+                        <!-- クリップボードにコピー -->
+                        <button id="copyBtn" onclick="copyResult()" class="bg-[#3BA29B] hover:bg-[#1F7068] text-white font-bold text-xs py-2 px-3.5 rounded-lg flex items-center gap-1.5 transition">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            結果をコピー
+                        </button>
                     </div>
-                </div>
-                <div>
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">選出点数</span>
-                    <div id="itemCountDisplay" class="text-lg font-bold text-[#1F7068]">
-                        0 点
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="spinGacha()" class="bg-white hover:bg-slate-50 text-[#1F7068] font-bold px-4 py-2 rounded-lg border border-[#2BB3A3]/40 text-sm shadow-sm flex items-center gap-1.5 transition">
-                        <i data-lucide="rotate-cw" class="w-4 h-4"></i> もう一度回す
-                    </button>
-                </div>
-            </div>
 
-            <!-- 案内通知枠（単品/3点で予算超過時のアドバイス等） -->
-            <div id="resultNotice" class="hidden text-xs bg-amber-50 text-amber-900 border border-amber-200 p-3.5 rounded-xl font-medium flex items-center gap-2">
-                <!-- JSで動的挿入 -->
-            </div>
-
-            <!-- シェアボタンエリア -->
-            <div class="bg-white rounded-xl p-4 border border-[#2BB3A3]/20 shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <span class="text-xs font-bold text-[#1F7068] flex items-center gap-1.5">
-                    <i data-lucide="share-2" class="w-4 h-4 text-[#3BA29B]"></i> 結果をシェアする:
-                </span>
-                <div class="flex flex-wrap items-center gap-2">
-                    <!-- X (Twitter) -->
-                    <button onclick="shareOnX()" class="bg-slate-900 hover:bg-black text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition">
-                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                        Xでシェア
-                    </button>
-                    <!-- LINE -->
-                    <button onclick="shareOnLine()" class="bg-[#06C755] hover:bg-[#05B34C] text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition">
-                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.019 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.645 1.281-.542 6.911-4.069 9.428-6.967 1.739-1.907 2.589-3.854 2.589-5.29z"/></svg>
-                        LINEで送る
-                    </button>
-                    <!-- リンク / 結果コピー -->
-                    <button id="copyBtn" onclick="copyResult()" class="bg-[#3BA29B] hover:bg-[#1F7068] text-white font-bold px-3.5 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> 結果をコピー
+                    <button onclick="spinGacha()" class="text-xs text-[#1F7068] hover:text-[#3BA29B] font-bold flex items-center gap-1">
+                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                        もう一度回す
                     </button>
                 </div>
-            </div>
-
-            <!-- 当たった商品リスト（商品ページへのリンク付き） -->
-            <div id="itemList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- JSで動的生成 -->
             </div>
         </div>
 
-        <!-- Google AdSense 広告枠（下部） -->
-        <div class="my-8 text-center">
-            <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">スポンサーリンク</div>
-            <div class="min-h-[100px] flex items-center justify-center bg-slate-50 border border-dashed border-[#2BB3A3]/20 rounded-xl overflow-hidden">
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-                     data-ad-slot="YYYYYYYYYY"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>
-                     try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
-                </script>
-            </div>
-        </div>
-
-        <!-- データ管理・ステータス領域 -->
-        <div class="mt-8 border-t border-slate-200 pt-6">
-            <div class="bg-white rounded-xl border border-[#2BB3A3]/20 p-4 shadow-sm">
-                <div class="font-bold text-slate-700 flex justify-between items-center">
-                    <span class="flex items-center gap-2"><i data-lucide="database" class="w-4 h-4 text-[#3BA29B]"></i> 画材データ連携ステータス</span>
-                    <button onclick="refreshData()" class="text-xs bg-slate-100 hover:bg-[#2BB3A3]/20 hover:text-[#1F7068] px-3 py-1.5 rounded-lg transition font-bold text-slate-600">キャッシュ更新</button>
-                </div>
-                <div class="mt-3 pt-3 border-t border-slate-100 text-sm space-y-1.5">
-                    <p class="text-slate-500">
-                        読込済み画材数: <strong id="itemCount" class="text-[#1F7068]">準備中...</strong> 件
-                    </p>
-                    <p class="text-xs text-slate-400">※GitHub Actionsの自動スクレイピングによってSupabaseに蓄積された最新商品データ（約1.8万件）から選定されます。</p>
-                </div>
-            </div>
+        <!-- 広告スペース2（下部） -->
+        <div class="my-6 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl p-2 min-h-[90px] flex items-center justify-center">
+            <span class="text-xs text-slate-300 font-medium">スポンサーリンク</span>
         </div>
 
     </main>
 
     <!-- フッター -->
-    <footer class="bg-slate-50 border-t border-slate-200 py-6 text-center text-xs text-slate-400">
-        <div class="max-w-4xl mx-auto px-4">
-            <p>当アプリは笹部洋画材料店様のファンによる非公式ファン制作ツールです。</p>
-            <p class="mt-1">価格・在庫等の最新情報は必ず笹部画材公式サイトにてご確認ください。</p>
-            <p class="mt-1 font-mono text-[10px] text-slate-400">© 3,000 yen Art Supplies Gacha App</p>
+    <footer class="bg-slate-50 border-t border-slate-200 text-slate-400 py-6 text-xs text-center">
+        <div class="max-w-4xl mx-auto px-4 space-y-2">
+            <p>当ツールは笹部画材（笹部洋画材料店）の非公式ファンツールです。商品データ・商標の著作権は各権利者に帰属します。</p>
+            <p class="text-slate-300">Created with ❤️ for Art Lovers</p>
         </div>
     </footer>
 
-    <!-- アプリケーションロジック & Supabase連携 -->
+    <!-- アプリケーション ロジック -->
     <script>
         // ==========================================
-        // 【設定】Supabase接続設定
-        // ※必ずダッシュボード（Settings > API）の「anon key (public)」を指定してください。
-        // ※管理者用「service_role key」は絶対に設定しないでください。
+        // 設定 & 定数
         // ==========================================
-        const SUPABASE_URL = 'あなたのSUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'あなたのSUPABASE_ANON_KEY';
+        const SUPABASE_URL = "https://hzcliswtdybrvjtwvwhm.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6Y2xpc3d0ZHlicnZqdHd2d2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NDgzMjMsImV4cCI6MjA3ODMyNDMyM30.41pI_5V0UjO1iLByyGZsoS6q3P9pI4Y3z400iEa-aDE";
 
-        // キャッシュ管理用キー（1時間有効）
-        const CACHE_KEY = 'sasabe_products_cache_v4';
-        const CACHE_EXPIRE_KEY = 'sasabe_products_cache_expire_v4';
-        const CACHE_TTL_MS = 60 * 60 * 1000; // 1時間
+        const CACHE_KEY = "sasabe_gacha_products_v3";
+        const CACHE_EXPIRE_KEY = "sasabe_gacha_expire_v3";
+        const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6時間
 
         let _supabase = null;
-        if (SUPABASE_URL && !SUPABASE_URL.includes('あなたの') && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('あなたの')) {
-            try {
-                _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } catch (e) {
-                console.warn('Supabase client init failed:', e);
+        try {
+            if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+                _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
+        } catch (e) {
+            console.warn('Supabase initialization failed:', e);
         }
 
         let items = [];
-
-        // カテゴリ判定キーワード定義（DB構造変更不要で即座に高速分類）
-        const CATEGORY_KEYWORDS = {
-            oil: ['油絵具', '油彩', 'ピグメント', 'デュオ', 'ヴェルネ', 'ムッシーニ', 'ミノー', 'ギルド', 'マツダスーパー', '文房堂', 'レンブラント', 'ブロックス', 'ヴァンゴッホ', 'オイルスティック', '地塗り', '油壺'],
-            watercolor: ['水彩', '透明水彩', '不透明水彩', 'ガッシュ', 'グラニュレーティング', 'インク', 'ペン', '水墨', '顔彩', '墨運堂', '呉竹', '絵墨', 'カリグラフィー', 'ガラスペン'],
-            acrylic: ['アクリル', 'リキテックス', 'ゴールデン', 'フルイド', 'アクリリック', 'ポーリング', 'ジェッソ', 'モデリングペースト'],
-            brush: ['筆', '刷毛', 'ブラシ', 'エスコダ', '豚毛', 'セーブル', '面相', '丸筆', '平筆', 'ファン'],
-            canvas: ['キャンバス', '木枠', 'パネル', 'クレサン', 'フナオカ', '張りキャンバス', 'マルオカ', '麻'],
-            medium: ['画溶液', '画用液', 'テレピン', 'ペトロール', 'オイル', 'クリーナー', 'ワニス', 'ニス', 'リンシード', 'ポピー', 'ブラシクリーナー', 'ナイフ', 'パレット', '筆洗'],
-            paper: ['紙', 'ブック', 'スケッチ', 'ボード', '水彩紙', 'ワットマン', 'アルシュ', 'マーメイド', 'キャンソン', 'ポストカード', 'イラストボード'],
-            pastel: ['パステル', 'コンテ', '色鉛筆', '鉛筆', 'デッサン', '木炭', '練りゴム', 'カレパステル', 'フィキサチフ'],
-            frame: ['額', 'フレーム', '仮額', '仮縁', '油彩縁', 'デッサン額']
-        };
-
-        function matchesCategory(item, categoryKey) {
-            if (!categoryKey || categoryKey === 'all') return true;
-            const keywords = CATEGORY_KEYWORDS[categoryKey];
-            if (!keywords) return true;
-            const target = ((item.category || '') + ' ' + (item.name || '')).toLowerCase();
-            return keywords.some(kw => target.includes(kw.toLowerCase()));
-        }
 
         // XSS防止用エスケープ関数
         function escapeHtml(str) {
@@ -302,7 +228,7 @@
                 .replace(/'/g, '&#39;');
         }
 
-        // 安全なリンク検証・整形（相対パスなら笹部画材ドメインを自動補完して各商品リンクへ確実に誘導）
+        // 安全なリンク検証・整形（相対パスなら笹部画材ドメインを自動補完）
         function sanitizeUrl(rawUrl) {
             if (!rawUrl) return '';
             let u = String(rawUrl).trim();
@@ -318,7 +244,72 @@
             return '';
         }
 
-        // 起動時に商品データをロード（キャッシュ優先で高速化＆Supabase転送量節約）
+        // ==========================================
+        // カテゴリー動的同期（DBのcategory列の値をそのままプルダウンに反映）
+        // ==========================================
+        function updateCategorySelect() {
+            const selectEl = document.getElementById('categorySelect');
+            if (!selectEl || !items || items.length === 0) return;
+
+            const previousValue = selectEl.value;
+
+            // DB内のユニークなカテゴリを抽出して出現数を集計
+            const counts = {};
+            items.forEach(it => {
+                const c = (it.category || '').trim();
+                if (c) counts[c] = (counts[c] || 0) + 1;
+            });
+
+            // 笹部画材サイトの標準的な並び順（サイトの順番）
+            const SITE_CATEGORY_ORDER = [
+                '油絵具・ピグメント',
+                '画溶液・クリーナー',
+                'アクリル絵具',
+                'キャンバス・木枠・パネル',
+                '油彩・アクリル用品',
+                '筆・刷毛',
+                '紙・ブック・紙携帯用品',
+                '水彩・インク・ペン',
+                '顔彩・書道・水墨・篆刻',
+                'パステル・コンテ・色鉛筆',
+                'デッサン用品',
+                '製図・模型',
+                'エッチング・木版画材料',
+                'ホビー・ねんど・染色',
+                '額縁・仮額'
+            ];
+
+            const categories = Object.keys(counts).sort((a, b) => {
+                const idxA = SITE_CATEGORY_ORDER.indexOf(a);
+                const idxB = SITE_CATEGORY_ORDER.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return counts[b] - counts[a];
+            });
+
+            selectEl.innerHTML = `<option value="all">🎨 すべてのカテゴリー (${items.length.toLocaleString()}点)</option>`;
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = `📁 ${cat} (${counts[cat].toLocaleString()}点)`;
+                selectEl.appendChild(opt);
+            });
+
+            // 以前選択されていた値が存在すれば復元
+            if (previousValue && (previousValue === 'all' || counts[previousValue])) {
+                selectEl.value = previousValue;
+            }
+        }
+
+        function matchesCategory(item, categoryKey) {
+            if (!categoryKey || categoryKey === 'all') return true;
+            return (item.category || '').trim() === categoryKey;
+        }
+
+        // ==========================================
+        // 商品データ読み込み（Supabase ＆ キャッシュ ＆ フォールバック）
+        // ==========================================
         async function loadProducts() {
             const countEl = document.getElementById('itemCount');
             
@@ -331,6 +322,7 @@
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         items = parsed;
                         countEl.innerText = `${items.length.toLocaleString()} (キャッシュ)`;
+                        updateCategorySelect();
                         return;
                     }
                 }
@@ -338,7 +330,7 @@
                 console.warn('Cache read error:', e);
             }
 
-            // 2. Supabaseからの取得（urlカラムを確実に取得）
+            // 2. Supabaseからの取得
             if (_supabase) {
                 try {
                     countEl.innerText = 'Supabaseから取得中...';
@@ -346,7 +338,7 @@
                         .from('products')
                         .select('name, price, category, url')
                         .eq('in_stock', true)
-                        .limit(10000);
+                        .limit(25000);
 
                     if (error) throw error;
 
@@ -359,6 +351,7 @@
                             console.warn('SessionStorage full:', quotaError);
                         }
                         countEl.innerText = items.length.toLocaleString();
+                        updateCategorySelect();
                         return;
                     }
                 } catch (err) {
@@ -367,36 +360,24 @@
                 }
             }
 
-            // 3. フォールバック（各商品固有の詳細ページURLを保持したデモ用サンプルデータ）
+            // 3. フォールバック（オフライン・デモ用サンプルデータ）
             if (items.length === 0) {
                 items = [
-                    // 油絵具・用品
-                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具", url: "https://www.sasabegazai.co.jp/pop.html?id=1000801&s=1" },
-                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具", url: "https://www.sasabegazai.co.jp/pop.html?id=1000802&s=1" },
-                    { name: "ホルベイン ヴェルネ 20ml コバルトブルー", price: 1980, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1107" },
-                    { name: "クサカベ 油絵具 専門家用 110色 木箱デラックスセット", price: 78430, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1119" },
-                    { name: "ホルベイン アーチスト油絵具 100色セット 木製トランク", price: 142000, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1119" },
-                    { name: "シュミンケ ムッシーニ 最高級天然樹脂油絵具 特製木箱84色セット", price: 192500, category: "油絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1114" },
-                    // 筆・ナイフ
-                    { name: "ナムラ 油彩筆 SK 8号 丸", price: 920, category: "筆", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1603" },
-                    { name: "エスコダ 高級コリンスキーセーブル油彩筆 特製7本セット", price: 34500, category: "筆", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1601" },
-                    { name: "ホルベイン ペインティングナイフ No.1", price: 1100, category: "ナイフ", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1503" },
-                    // 画用液・パレット
-                    { name: "クサカベ テレピン 55ml", price: 680, category: "画用液", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1202" },
-                    { name: "ホルベイン オイルパレット 楕円型", price: 1980, category: "パレット", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1501" },
-                    { name: "マツダ クイックオイルパレット 特大", price: 2850, category: "パレット", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1501" },
-                    // キャンバス・イーゼル
-                    { name: "クレサン 張りキャンバス F4号", price: 850, category: "キャンバス", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1401" },
-                    { name: "クレサン 最高級麻張りキャンバス F100号", price: 18500, category: "キャンバス", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1401" },
-                    { name: "ホルベイン アトリエイーゼル 38B 大型木製", price: 68200, category: "イーゼル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1502" },
-                    // 水彩・アクリル・紙・その他
-                    { name: "ホルベイン 透明水彩絵具 24色セット", price: 4620, category: "水彩", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1801" },
-                    { name: "リキテックス プライム アクリル絵具 24色セット", price: 8250, category: "アクリル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1301" },
-                    { name: "ウォーターフォード水彩紙 ホワイト ブロック 300g F8", price: 4950, category: "紙", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1701" },
-                    { name: "カランダッシュ ネオパステル 96色木箱セット", price: 52800, category: "パステル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=2001" },
-                    { name: "高級ゴールド油彩額縁 F30号 彫刻入り", price: 48900, category: "額縁", url: "https://www.sasabegazai.co.jp/listview/item.html?id=2501" }
+                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/pop.html?id=1000801&s=1" },
+                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/pop.html?id=1000802&s=1" },
+                    { name: "ホルベイン ヴェルネ 20ml コバルトブルー", price: 1980, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1107" },
+                    { name: "クサカベ テレピン 55ml", price: 680, category: "画溶液・クリーナー", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1202" },
+                    { name: "リキテックス プライム アクリル絵具 24色セット", price: 8250, category: "アクリル絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1301" },
+                    { name: "クレサン 張りキャンバス F4号", price: 850, category: "キャンバス・木枠・パネル", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1401" },
+                    { name: "ホルベイン ペインティングナイフ No.1", price: 1100, category: "油彩・アクリル用品", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1503" },
+                    { name: "ナムラ 油彩筆 SK 8号 丸", price: 920, category: "筆・刷毛", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1603" },
+                    { name: "ウォーターフォード水彩紙 ホワイト ブロック 300g F8", price: 4950, category: "紙・ブック・紙携帯用品", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1701" },
+                    { name: "ホルベイン 透明水彩絵具 24色セット", price: 4620, category: "水彩・インク・ペン", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1801" },
+                    { name: "カランダッシュ ネオパステル 96色木箱セット", price: 52800, category: "パステル・コンテ・色鉛筆", url: "https://www.sasabegazai.co.jp/listview/item.html?id=2001" },
+                    { name: "高級ゴールド油彩額縁 F30号 彫刻入り", price: 48900, category: "額縁・仮額", url: "https://www.sasabegazai.co.jp/listview/item.html?id=2501" }
                 ];
                 countEl.innerText = `${items.length} (デモサンプルモード)`;
+                updateCategorySelect();
             }
         }
 
@@ -411,7 +392,9 @@
             loadProducts();
         });
 
+        // ==========================================
         // ガチャ実行
+        // ==========================================
         async function spinGacha() {
             if (items.length === 0) {
                 await loadProducts();
@@ -421,10 +404,9 @@
                 }
             }
 
-            // 入力バリデーション（安全対策：1000万円まで許容）
             let rawBudget = parseInt(document.getElementById('budgetInput').value, 10);
             if (isNaN(rawBudget) || rawBudget <= 0) rawBudget = 3000;
-            if (rawBudget > 10000000) rawBudget = 10000000; // 1,000万円上限保護
+            if (rawBudget > 10000000) rawBudget = 10000000;
             const budget = rawBudget;
             document.getElementById('budgetInput').value = budget;
 
@@ -439,7 +421,6 @@
             resultContainer.classList.add('hidden');
             rouletteDisplay.classList.remove('hidden');
 
-            // ルーレット演出（安全にtextContentを使用）
             const categoryPool = items.filter(i => matchesCategory(i, categoryKey));
             const samplePool = categoryPool.length > 0 ? categoryPool : items;
 
@@ -463,22 +444,21 @@
                         origin: { y: 0.7 }
                     });
                 } catch(e) {}
-            }, 1200);
+            }, 1100);
         }
 
         // ==========================================
-        // ガチャ計算ロジック（最大99点対応 ＆ 予算ギリギリ満額購入アルゴリズム）
+        // ガチャ計算ロジック（おつり最小化 ＆ 最大99点対応）
         // ==========================================
         function calculateResult(budget, mode, categoryKey) {
             if (!items || items.length === 0) return { items: [], notice: '' };
 
-            // カテゴリ絞り込み
             let pool = items.filter(i => matchesCategory(i, categoryKey));
             let notice = '';
 
             if (pool.length === 0) {
                 pool = items;
-                notice = '※指定されたカテゴリの商品が少なかったため、全カテゴリから選定しました。';
+                notice = '※指定されたカテゴリーに該当する商品がなかったため、全商品から選定しました。';
             }
 
             // 1. ピッタリ単品狙い（おつりを少なく、ランダム性も残す）
@@ -492,17 +472,14 @@
                     };
                 }
 
-                // 高い順にソート
                 affordable.sort((a, b) => Number(b.price) - Number(a.price));
                 const maxPrice = Number(affordable[0].price);
 
-                // 予算が単品最高額の1.5倍を超える場合
                 if (budget >= maxPrice * 1.5) {
                     notice = `💡 単品の最高額商品（¥${maxPrice.toLocaleString()}）を選出しました。${budget.toLocaleString()}円を満額使い切るには「🛒 予算ギリギリ詰め合わせ」モードをお試しください！`;
                     return { items: [affordable[0]], notice };
                 }
 
-                // 通常予算：予算の75%〜100%の価格帯からランダム抽出
                 const highTier = affordable.filter(i => Number(i.price) >= budget * 0.75);
                 if (highTier.length >= 3) {
                     return { items: [highTier[Math.floor(Math.random() * highTier.length)]], notice };
@@ -519,7 +496,6 @@
                 const affordable = pool.filter(i => Number(i.price) <= budget);
                 if (affordable.length < 3) return { items: affordable.slice(0, 3), notice };
 
-                // モンテカルロサンプリング：120回試行
                 const combinations = [];
                 for (let iter = 0; iter < 120; iter++) {
                     const shuffled = [...affordable].sort(() => 0.5 - Math.random());
@@ -551,17 +527,15 @@
                 return { items: affordable.slice(0, 3), notice };
             }
 
-            // 3. 予算ギリギリ詰め合わせ（最大99点まで予算ギリギリおつり0円を目指して選定！）
+            // 3. 予算ギリギリ詰め合わせ（最大99点対応）
             if (mode === 'budget') {
                 const affordable = pool.filter(i => Number(i.price) <= budget);
                 if (affordable.length === 0) return { items: [], notice };
 
-                // 最大99点まで予算に合わせて詰め合わせ
                 const MAX_ITEMS = 99;
                 const selected = [];
                 let currentTotal = 0;
 
-                // 予算規模に応じて、高額予算の場合は平均ターゲット単価を意識して選定、通常予算はランダムシャッフル
                 let candidates;
                 if (budget >= 100000) {
                     const targetAvg = budget / Math.min(MAX_ITEMS, Math.max(10, Math.floor(budget / 10000)));
@@ -574,7 +548,6 @@
                     candidates = [...affordable].sort(() => 0.5 - Math.random());
                 }
 
-                // 第1パス：最大99点まで予算以内で選定
                 for (let it of candidates) {
                     if (selected.length >= MAX_ITEMS) break;
                     const p = Number(it.price);
@@ -584,7 +557,6 @@
                     }
                 }
 
-                // 第2パス：隙間埋め（残り予算を最も大きい商品から貪欲に埋めて最大99点に達するまでおつり0円を徹底追求）
                 let remaining = budget - currentTotal;
                 if (remaining > 0 && selected.length < MAX_ITEMS) {
                     const fillers = affordable
@@ -608,7 +580,9 @@
             return { items: [], notice: '' };
         }
 
-        // 結果描画（安全なDOM生成・XSS対策・DBの商品リンクへの直接遷移）
+        // ==========================================
+        // 結果描画
+        // ==========================================
         function renderResult(selectedItems, budget, noticeText) {
             const resultContainer = document.getElementById('resultContainer');
             const itemList = document.getElementById('itemList');
@@ -657,7 +631,6 @@
             totalPriceEl.textContent = total.toLocaleString();
             const diff = budget - total;
             budgetDiffEl.textContent = `おつり: ${diff.toLocaleString()} 円`;
-            itemCountDisplay.textContent = `${selectedItems.length} 点`;
 
             if (noticeText) {
                 resultNotice.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-amber-600 flex-shrink-0"></i> <span>${escapeHtml(noticeText)}</span>`;
@@ -671,21 +644,19 @@
         }
 
         // ==========================================
-        // SNSシェア機能群（X, LINE, クリップボードコピー）
+        // SNSシェア機能
         // ==========================================
         function getShareText() {
             const total = document.getElementById('totalPrice').textContent;
             const budget = document.getElementById('budgetInput').value;
             const diff = document.getElementById('budgetDiff').textContent.replace('おつり: ', '').trim();
-            const count = document.getElementById('itemCountDisplay').textContent;
             const categorySelect = document.getElementById('categorySelect');
-            const categoryLabel = categorySelect.options[categorySelect.selectedIndex].text.replace(/^[^\s]+\s*/, '');
+            const categoryLabel = categorySelect.options[categorySelect.selectedIndex]?.text?.replace(/^[^\s]+\s*/, '')?.replace(/\s*\([\d,]+点\)$/, '') || '';
             
             const catPart = categorySelect.value !== 'all' ? `（${categoryLabel}限定）` : '';
-            return `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円${catPart}】ガチャを回しました！\n合計: ¥${total}（おつり: ${diff} / ${count}選出）\n\n笹部画材 3,000円ガチャ＆ルーレット\n#笹部画材 #画材ガチャ #笹部画材ガチャ`;
+            return `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円${catPart}】ガチャを回しました！\n合計: ¥${total}（おつり: ${diff}）\n\n笹部画材 3,000円ガチャ＆ルーレット\n#笹部画材 #画材ガチャ #笹部画材ガチャ`;
         }
 
-        // X (Twitter) シェア
         function shareOnX() {
             const text = getShareText();
             const url = window.location.href;
@@ -693,7 +664,6 @@
             window.open(shareUrl, '_blank', 'noopener,noreferrer');
         }
 
-        // LINE シェア
         function shareOnLine() {
             const text = getShareText();
             const url = window.location.href;
@@ -701,7 +671,6 @@
             window.open(shareUrl, '_blank', 'noopener,noreferrer');
         }
 
-        // 結果・URLのクリップボードコピー
         async function copyResult() {
             const copyBtn = document.getElementById('copyBtn');
             const text = `${getShareText()}\n${window.location.href}`;
