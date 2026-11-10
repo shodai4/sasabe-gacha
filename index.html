@@ -324,7 +324,11 @@
                 if (cached && expire && Date.now() < parseInt(expire, 10)) {
                     const parsed = JSON.parse(cached);
                     if (Array.isArray(parsed) && parsed.length > 0) {
-                        items = parsed;
+                        if (Array.isArray(parsed[0])) {
+                            items = parsed.map(([name, price, category, url]) => ({ name, price, category, url }));
+                        } else {
+                            items = parsed;
+                        }
                         countEl.innerText = `${items.length.toLocaleString()} (キャッシュ)`;
                         updateCategorySelect();
                         return;
@@ -334,22 +338,51 @@
                 console.warn('Cache read error:', e);
             }
 
-            // 2. Supabaseからの取得
+            // 2. Supabaseからの全件取得（1,000件上限をページネーションで突破）
             if (_supabase) {
                 try {
-                    countEl.innerText = 'Supabaseから取得中...';
-                    const { data, error } = await _supabase
+                    countEl.innerText = 'Supabaseから全商品を取得中...';
+                    
+                    const PAGE_SIZE = 1000;
+                    // 初回リクエストで件数と最初の1,000件を取得
+                    const { data: firstPage, count, error: firstErr } = await _supabase
                         .from('products')
-                        .select('name, price, category, url')
+                        .select('name, price, category, url', { count: 'exact' })
                         .eq('in_stock', true)
-                        .limit(25000);
+                        .range(0, PAGE_SIZE - 1);
 
-                    if (error) throw error;
+                    if (firstErr) throw firstErr;
 
-                    if (data && data.length > 0) {
-                        items = data;
+                    let allData = firstPage || [];
+                    const totalCount = count || allData.length;
+
+                    if (totalCount > PAGE_SIZE) {
+                        const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+                        const pagePromises = [];
+                        for (let p = 1; p < totalPages; p++) {
+                            const from = p * PAGE_SIZE;
+                            const to = Math.min((p + 1) * PAGE_SIZE - 1, totalCount - 1);
+                            pagePromises.push(
+                                _supabase
+                                    .from('products')
+                                    .select('name, price, category, url')
+                                    .eq('in_stock', true)
+                                    .range(from, to)
+                            );
+                        }
+                        const results = await Promise.all(pagePromises);
+                        for (const res of results) {
+                            if (res.data) {
+                                allData = allData.concat(res.data);
+                            }
+                        }
+                    }
+
+                    if (allData.length > 0) {
+                        items = allData;
                         try {
-                            sessionStorage.setItem(CACHE_KEY, JSON.stringify(items));
+                            const compact = items.map(i => [i.name, i.price, i.category, i.url]);
+                            sessionStorage.setItem(CACHE_KEY, JSON.stringify(compact));
                             sessionStorage.setItem(CACHE_EXPIRE_KEY, String(Date.now() + CACHE_TTL_MS));
                         } catch (quotaError) {
                             console.warn('SessionStorage full:', quotaError);
@@ -357,6 +390,8 @@
                         countEl.innerText = items.length.toLocaleString();
                         updateCategorySelect();
                         return;
+                    } else {
+                        console.warn('Supabase returned 0 products.');
                     }
                 } catch (err) {
                     console.error('Supabase fetch error:', err);
@@ -367,8 +402,8 @@
             // 3. フォールバック（オフライン・デモ用サンプルデータ）
             if (items.length === 0) {
                 items = [
-                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/pop.html?id=1000801&s=1" },
-                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/pop.html?id=1000802&s=1" },
+                    { name: "クサカベ油絵具 20ml チタニウムホワイト", price: 420, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1101" },
+                    { name: "ホルベイン 油絵具 20ml ウルトラマリンディープ", price: 550, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1102" },
                     { name: "ホルベイン ヴェルネ 20ml コバルトブルー", price: 1980, category: "油絵具・ピグメント", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1107" },
                     { name: "クサカベ テレピン 55ml", price: 680, category: "画溶液・クリーナー", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1202" },
                     { name: "リキテックス プライム アクリル絵具 24色セット", price: 8250, category: "アクリル絵具", url: "https://www.sasabegazai.co.jp/listview/item.html?id=1301" },

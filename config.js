@@ -7,7 +7,7 @@
 
 window.APP_CONFIG = {
     // Supabase プロジェクトURL（例: "https://xxxxxxxxxxxxxxxx.supabase.co"）
-    SUPABASE_URL: "https://xxzmrdfroqefifgszgls.supabase.co",
+    SUPABASE_URL: "https://xxzmrdfroqeflfgszgls.supabase.co",
 
     // Supabase 公開APIキー（anon public key: "eyJhbGci..."）
     SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4em1yZGZyb3FlZmxmZ3N6Z2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNzM2NTQsImV4cCI6MjEwOTg0OTY1NH0.To_PyTNca1yzXnxWMKGK9w4QF_1HZBCBB1xPKCrYZYo",
