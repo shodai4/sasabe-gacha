@@ -210,35 +210,13 @@
 
 
 
-        <!-- 作家支援ツール集（プロトタイプ） -->
-        <div class="mt-4 mb-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
-            <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center mb-2">🎨 画家・作家向けプロトタイプツール</h3>
-            <div class="grid grid-cols-3 gap-1.5 text-left">
-                <a href="hang-navi/" class="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 shadow-xs transition block group">
-                    <span class="text-sm block">🖼️</span>
-                    <strong class="text-[11px] font-bold text-slate-800 block group-hover:text-[#1F7068] truncate">搬入ナビ</strong>
-                    <span class="text-[9px] text-slate-400 block truncate">壁面配置計算</span>
-                </a>
-                <a href="art-stock/" class="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 shadow-xs transition block group">
-                    <span class="text-sm block">🎨</span>
-                    <strong class="text-[11px] font-bold text-slate-800 block group-hover:text-[#1F7068] truncate">画材管理</strong>
-                    <span class="text-[9px] text-slate-400 block truncate">手持ち在庫</span>
-                </a>
-                <a href="fog-walker/" class="p-2 bg-white hover:bg-slate-100 rounded-lg border border-slate-200 shadow-xs transition block group">
-                    <span class="text-sm block">🗺️</span>
-                    <strong class="text-[11px] font-bold text-slate-800 block group-hover:text-[#1F7068] truncate">FogWalker</strong>
-                    <span class="text-[9px] text-slate-400 block truncate">RPG散歩</span>
-                </a>
-            </div>
-        </div>
-
     </main>
 
     <!-- フッター -->
     <footer class="bg-slate-50 border-t border-slate-200 text-slate-400 py-3.5 text-[10px] text-center">
         <div class="max-w-4xl mx-auto px-4 space-y-1">
             <p>当ツールは笹部画材（笹部洋画材料店）の非公式ファンツールです。商品データ・商標の著作権は各権利者に帰属します。</p>
-            <p class="text-slate-300">Created with ❤️ for Art Lovers</p>
+            <p class="text-slate-400">Created with for お絵描き楽しも委員会（しょうだい）</p>
         </div>
     </footer>
 
@@ -923,7 +901,7 @@
             const categoryLabel = categorySelect.options[categorySelect.selectedIndex]?.text?.replace(/^[^\s]+\s*/, '')?.replace(/\s*\([\d,]+点\)$/, '') || '';
             
             const catPart = categorySelect.value !== 'all' ? `（${categoryLabel}限定）` : '';
-            return `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円${catPart}】ガチャを回しました！\n合計: ¥${total}（おつり: ${diff}）\n\n笹部画材 3,000円ガチャ＆ルーレット\n#笹部画材 #画材ガチャ #笹部画材ガチャ`;
+            return `🎨 笹部画材で【予算${Number(budget).toLocaleString()}円${catPart}】ガチャを回しました！\n合計: ¥${total}（おつり: ${diff}）\n\n笹部画材 3,000円ガチャ＆ルーレット\n#画材ガチャ`;
         }
 
         function shareOnX() {
