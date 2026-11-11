@@ -155,8 +155,8 @@
                         </div>
                         <p class="text-[10px] text-slate-500">選ばれた全画材を1クリックでまとめて笹部画材のカートへ投入できます</p>
                     </div>
-                    <!-- ネイティブForm送信（ブラウザのポップアップブロックを完全回避） -->
-                    <form id="batchCartForm" action="https://www.sasabegazai.co.jp/cart_in.html" method="POST" target="_blank" onsubmit="onBatchCartSubmit()" class="w-full sm:w-auto shrink-0 m-0">
+                    <!-- ネイティブForm送信 + 公式カート自動遷移（ポップアップブロック完全回避） -->
+                    <form id="batchCartForm" action="https://www.sasabegazai.co.jp/cart_in.html" method="POST" onsubmit="return submitBatchCart(event)" class="w-full sm:w-auto shrink-0 m-0">
                         <div id="batchCartInputs"></div>
                         <button type="submit" id="addAllToCartBtn" class="w-full sm:w-auto bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-xs sm:text-sm py-2 px-4 rounded-lg shadow-xs shadow-amber-500/20 transition flex items-center justify-center gap-1.5 cursor-pointer">
                             <i data-lucide="shopping-cart" class="w-4 h-4"></i>
@@ -738,9 +738,9 @@
                 ` : '';
 
                 const singleCartButton = pid ? `
-                    <form action="https://www.sasabegazai.co.jp/cart_in.html" method="POST" target="_blank" onsubmit="onSingleCartSubmit()" class="inline m-0">
+                    <form action="https://www.sasabegazai.co.jp/cart_in.html" method="POST" onsubmit="return submitSingleCart(event, '${pid}')" class="inline m-0">
                         <input type="hidden" name="id_${pid}" value="1">
-                        <button type="submit" title="この商品をカートに追加" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0 cursor-pointer">
+                        <button type="submit" title="この商品をカートに追加してカート画面を開く" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0 cursor-pointer">
                             <i data-lucide="shopping-cart" class="w-2.5 h-2.5"></i> カート
                         </button>
                     </form>
@@ -778,30 +778,139 @@
         }
 
         // ==========================================
-        // 笹部画材 カート投入完了ハンドラ（ネイティブForm送信時）
+        // 笹部画材 カート投入＆公式カート画面（cart.html）自動遷移ハンドラ
         // ==========================================
-        function onBatchCartSubmit() {
+        function submitBatchCart(e) {
+            if (e) e.preventDefault();
+            const form = document.getElementById('batchCartForm');
+            const inputs = document.querySelectorAll('#batchCartInputs input');
+            if (!form || inputs.length === 0) return false;
+
+            // 1. 同期的に別タブを開く（ブラウザのポップアップブロックを完全回避）
+            const targetTabName = 'sasabe_cart_win_' + Date.now();
+            const cartTab = window.open('about:blank', targetTabName);
+
+            // 2. 開いたタブの初期画面にローディング案内を表示
+            if (cartTab) {
+                try {
+                    cartTab.document.write(`
+                        <!DOCTYPE html>
+                        <html lang="ja">
+                        <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width,initial-scale=1">
+                            <title>笹部画材カートへ追加中...</title>
+                            <style>
+                                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #1e293b; text-align: center; }
+                                .box { padding: 24px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 320px; }
+                                .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #3BA29B; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+                                @keyframes spin { to { transform: rotate(360deg); } }
+                                h3 { margin: 0 0 6px; font-size: 15px; color: #0f172a; }
+                                p { margin: 0; font-size: 12px; color: #64748b; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="box">
+                                <div class="spinner"></div>
+                                <h3>🛒 カートへ商品を投入中...</h3>
+                                <p>まもなく笹部画材のカート画面が開きます</p>
+                            </div>
+                        </body>
+                        </html>
+                    `);
+                } catch (err) {}
+            }
+
+            // 3. Formを開いたタブに向けて送信（POSTによるセッションCookie保存）
+            form.target = targetTabName;
+            form.submit();
+
+            // 4. ガチャ画面側の完了案内を表示
             const noticeEl = document.getElementById('cartSuccessNotice');
             const msgEl = document.getElementById('cartSuccessMsg');
-            const inputs = document.querySelectorAll('#batchCartInputs input');
             if (noticeEl && msgEl) {
-                msgEl.textContent = `${inputs.length}点の商品を笹部画材のカートへ投入しました！（別タブで開きました）`;
+                msgEl.textContent = `${inputs.length}点の商品を笹部画材のカートへ投入しました！`;
                 noticeEl.classList.remove('hidden');
                 lucide.createIcons();
             }
-            return true;
+
+            // 5. POST完了を見計らい、公式カート画面（cart.html）へ自動遷移
+            setTimeout(() => {
+                if (cartTab) {
+                    try {
+                        cartTab.location.href = 'https://www.sasabegazai.co.jp/cart.html';
+                    } catch (err) {
+                        console.error('Failed to redirect cart tab:', err);
+                    }
+                }
+            }, 800);
+
+            return false;
         }
 
-        function onSingleCartSubmit() {
+        function submitSingleCart(e, pid) {
+            if (e) e.preventDefault();
+            const form = e.target;
+            if (!form) return false;
+
+            const targetTabName = 'sasabe_cart_single_' + Date.now();
+            const cartTab = window.open('about:blank', targetTabName);
+
+            if (cartTab) {
+                try {
+                    cartTab.document.write(`
+                        <!DOCTYPE html>
+                        <html lang="ja">
+                        <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width,initial-scale=1">
+                            <title>笹部画材カートへ追加中...</title>
+                            <style>
+                                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #1e293b; text-align: center; }
+                                .box { padding: 24px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 320px; }
+                                .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #3BA29B; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+                                @keyframes spin { to { transform: rotate(360deg); } }
+                                h3 { margin: 0 0 6px; font-size: 15px; color: #0f172a; }
+                                p { margin: 0; font-size: 12px; color: #64748b; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="box">
+                                <div class="spinner"></div>
+                                <h3>🛒 カートへ商品を投入中...</h3>
+                                <p>まもなく笹部画材のカート画面が開きます</p>
+                            </div>
+                        </body>
+                        </html>
+                    `);
+                } catch (err) {}
+            }
+
+            form.target = targetTabName;
+            form.submit();
+
             const noticeEl = document.getElementById('cartSuccessNotice');
             const msgEl = document.getElementById('cartSuccessMsg');
             if (noticeEl && msgEl) {
-                msgEl.textContent = `商品を笹部画材のカートへ投入しました！（別タブで開きました）`;
+                msgEl.textContent = `商品を笹部画材のカートへ投入しました！`;
                 noticeEl.classList.remove('hidden');
                 lucide.createIcons();
             }
-            return true;
+
+            setTimeout(() => {
+                if (cartTab) {
+                    try {
+                        cartTab.location.href = 'https://www.sasabegazai.co.jp/cart.html';
+                    } catch (err) {}
+                }
+            }, 800);
+
+            return false;
         }
+
+        // 旧ハンドラ互換
+        function onBatchCartSubmit() { return submitBatchCart(); }
+        function onSingleCartSubmit() { return true; }
 
         // ==========================================
         // SNSシェア機能
