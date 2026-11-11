@@ -155,10 +155,14 @@
                         </div>
                         <p class="text-[10px] text-slate-500">選ばれた全画材を1クリックでまとめて笹部画材のカートへ投入できます</p>
                     </div>
-                    <button id="addAllToCartBtn" onclick="addAllToCart()" class="w-full sm:w-auto bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-xs sm:text-sm py-2 px-4 rounded-lg shadow-xs shadow-amber-500/20 transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
-                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                        <span>まとめてカートに入れる</span>
-                    </button>
+                    <!-- ネイティブForm送信（ブラウザのポップアップブロックを完全回避） -->
+                    <form id="batchCartForm" action="https://www.sasabegazai.co.jp/cart_in.html" method="POST" target="_blank" onsubmit="onBatchCartSubmit()" class="w-full sm:w-auto shrink-0 m-0">
+                        <div id="batchCartInputs"></div>
+                        <button type="submit" id="addAllToCartBtn" class="w-full sm:w-auto bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-xs sm:text-sm py-2 px-4 rounded-lg shadow-xs shadow-amber-500/20 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                            <span>まとめてカートに入れる</span>
+                        </button>
+                    </form>
                 </div>
 
                 <!-- カート投入完了通知（投入後に表示） -->
@@ -677,10 +681,28 @@
             const resultNotice = document.getElementById('resultNotice');
             const cartActionBox = document.getElementById('cartActionBox');
             const cartSuccessNotice = document.getElementById('cartSuccessNotice');
+            const batchCartInputs = document.getElementById('batchCartInputs');
 
             if (cartSuccessNotice) cartSuccessNotice.classList.add('hidden');
+            if (batchCartInputs) batchCartInputs.innerHTML = '';
+
+            let validPidCount = 0;
+            if (batchCartInputs) {
+                currentSelectedItems.forEach(item => {
+                    const m = item.url ? String(item.url).match(/id=(\d+)/) : null;
+                    if (m && m[1]) {
+                        const inp = document.createElement('input');
+                        inp.type = 'hidden';
+                        inp.name = `id_${m[1]}`;
+                        inp.value = '1';
+                        batchCartInputs.appendChild(inp);
+                        validPidCount++;
+                    }
+                });
+            }
+
             if (cartActionBox) {
-                if (currentSelectedItems.length > 0) {
+                if (validPidCount > 0) {
                     cartActionBox.classList.remove('hidden');
                 } else {
                     cartActionBox.classList.add('hidden');
@@ -716,9 +738,12 @@
                 ` : '';
 
                 const singleCartButton = pid ? `
-                    <button onclick="addSingleToCart('${pid}')" title="この商品をカートに追加" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0 cursor-pointer">
-                        <i data-lucide="shopping-cart" class="w-2.5 h-2.5"></i> カート
-                    </button>
+                    <form action="https://www.sasabegazai.co.jp/cart_in.html" method="POST" target="_blank" onsubmit="onSingleCartSubmit()" class="inline m-0">
+                        <input type="hidden" name="id_${pid}" value="1">
+                        <button type="submit" title="この商品をカートに追加" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0 cursor-pointer">
+                            <i data-lucide="shopping-cart" class="w-2.5 h-2.5"></i> カート
+                        </button>
+                    </form>
                 ` : '';
 
                 card.innerHTML = `
@@ -753,76 +778,21 @@
         }
 
         // ==========================================
-        // 笹部画材 カート投入機能（一括 ＆ 単品）
+        // 笹部画材 カート投入完了ハンドラ（ネイティブForm送信時）
         // ==========================================
-        function addAllToCart() {
-            if (!currentSelectedItems || currentSelectedItems.length === 0) {
-                alert('カートに入れる商品がありません。');
-                return;
-            }
-
-            const cartItems = [];
-            currentSelectedItems.forEach(item => {
-                if (!item.url) return;
-                const m = String(item.url).match(/id=(\d+)/);
-                if (m && m[1]) {
-                    cartItems.push(m[1]);
-                }
-            });
-
-            if (cartItems.length === 0) {
-                alert('カート投入可能な商品IDが見つかりませんでした。');
-                return;
-            }
-
-            // 動的Formを生成して笹部画材のcart_in.htmlへPOST送信（別タブ）
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'https://www.sasabegazai.co.jp/cart_in.html';
-            form.target = '_blank';
-            form.rel = 'noopener noreferrer';
-
-            cartItems.forEach(pid => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `id_${pid}`;
-                input.value = '1';
-                form.appendChild(input);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-
-            // 完了案内UIを表示
+        function onBatchCartSubmit() {
             const noticeEl = document.getElementById('cartSuccessNotice');
             const msgEl = document.getElementById('cartSuccessMsg');
+            const inputs = document.querySelectorAll('#batchCartInputs input');
             if (noticeEl && msgEl) {
-                msgEl.textContent = `${cartItems.length}点の商品をカートへ投入しました！（別タブで開きました）`;
+                msgEl.textContent = `${inputs.length}点の商品を笹部画材のカートへ投入しました！（別タブで開きました）`;
                 noticeEl.classList.remove('hidden');
                 lucide.createIcons();
             }
+            return true;
         }
 
-        function addSingleToCart(productId) {
-            if (!productId) return;
-
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'https://www.sasabegazai.co.jp/cart_in.html';
-            form.target = '_blank';
-            form.rel = 'noopener noreferrer';
-
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = `id_${productId}`;
-            input.value = '1';
-            form.appendChild(input);
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
-
+        function onSingleCartSubmit() {
             const noticeEl = document.getElementById('cartSuccessNotice');
             const msgEl = document.getElementById('cartSuccessMsg');
             if (noticeEl && msgEl) {
@@ -830,6 +800,7 @@
                 noticeEl.classList.remove('hidden');
                 lucide.createIcons();
             }
+            return true;
         }
 
         // ==========================================
