@@ -146,6 +146,33 @@
                 <!-- 案内・注意通知（予算不足時や高額時など） -->
                 <div id="resultNotice" class="hidden mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 font-medium flex items-center gap-1.5"></div>
 
+                <!-- 🛒 一括カート投入アクション -->
+                <div id="cartActionBox" class="mb-3 p-2.5 sm:p-3 bg-gradient-to-r from-teal-50/80 via-emerald-50/60 to-amber-50/50 border border-[#2BB3A3]/30 rounded-lg flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <div class="text-left w-full sm:w-auto">
+                        <div class="text-xs font-bold text-[#1F7068] flex items-center gap-1">
+                            <i data-lucide="shopping-cart" class="w-3.5 h-3.5 text-[#3BA29B]"></i>
+                            <span>笹部画材公式カートへ一括追加</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500">選ばれた全画材を1クリックでまとめて笹部画材のカートへ投入できます</p>
+                    </div>
+                    <button id="addAllToCartBtn" onclick="addAllToCart()" class="w-full sm:w-auto bg-[#F0A732] hover:bg-[#D99222] active:scale-[0.98] text-white font-black text-xs sm:text-sm py-2 px-4 rounded-lg shadow-xs shadow-amber-500/20 transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span>まとめてカートに入れる</span>
+                    </button>
+                </div>
+
+                <!-- カート投入完了通知（投入後に表示） -->
+                <div id="cartSuccessNotice" class="hidden mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-900 flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                        <span id="cartSuccessMsg" class="font-medium text-[11px] sm:text-xs">全商品をカートへ投入しました！（別タブで開きました）</span>
+                    </div>
+                    <a href="https://www.sasabegazai.co.jp/cart.html" target="_blank" rel="noopener noreferrer" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] py-1.5 px-3 rounded flex items-center gap-1 shrink-0 transition">
+                        <span>カート画面を開く</span>
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                    </a>
+                </div>
+
                 <!-- 商品カード一覧 -->
                 <div id="itemList" class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-2.5 mb-3.5"></div>
 
@@ -637,13 +664,28 @@
         // ==========================================
         // 結果描画
         // ==========================================
+        let currentSelectedItems = [];
+
         function renderResult(selectedItems, budget, noticeText) {
+            currentSelectedItems = selectedItems || [];
+
             const resultContainer = document.getElementById('resultContainer');
             const itemList = document.getElementById('itemList');
             const totalPriceEl = document.getElementById('totalPrice');
             const budgetDiffEl = document.getElementById('budgetDiff');
             const itemCountDisplay = document.getElementById('itemCountDisplay');
             const resultNotice = document.getElementById('resultNotice');
+            const cartActionBox = document.getElementById('cartActionBox');
+            const cartSuccessNotice = document.getElementById('cartSuccessNotice');
+
+            if (cartSuccessNotice) cartSuccessNotice.classList.add('hidden');
+            if (cartActionBox) {
+                if (currentSelectedItems.length > 0) {
+                    cartActionBox.classList.remove('hidden');
+                } else {
+                    cartActionBox.classList.add('hidden');
+                }
+            }
 
             itemList.innerHTML = '';
             let total = 0;
@@ -660,13 +702,23 @@
                 const safeCategory = escapeHtml(item.category || '画材');
                 const safeUrl = sanitizeUrl(item.url);
 
+                // URLから商品IDを抽出（pop.html?id=〇〇 または item.html?id=〇〇）
+                const pidMatch = item.url ? String(item.url).match(/id=(\d+)/) : null;
+                const pid = pidMatch ? pidMatch[1] : null;
+
                 const card = document.createElement('div');
                 card.className = "bg-white p-2.5 sm:p-3.5 rounded-lg border border-[#2BB3A3]/20 shadow-2xs flex flex-col justify-between gap-1.5 hover:shadow-xs hover:border-[#2BB3A3]/50 transition";
                 
                 const linkButton = safeUrl ? `
-                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0">
+                    <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0">
                         見る <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
                     </a>
+                ` : '';
+
+                const singleCartButton = pid ? `
+                    <button onclick="addSingleToCart('${pid}')" title="この商品をカートに追加" class="text-[11px] bg-[#1F7068] hover:bg-[#16524C] text-white font-bold px-2 py-1 rounded flex items-center gap-0.5 transition shrink-0 cursor-pointer">
+                        <i data-lucide="shopping-cart" class="w-2.5 h-2.5"></i> カート
+                    </button>
                 ` : '';
 
                 card.innerHTML = `
@@ -674,9 +726,12 @@
                         <span class="text-[9px] font-bold text-[#3BA29B] uppercase tracking-wider block mb-0.5">${safeCategory}</span>
                         <h4 class="font-bold text-slate-800 text-xs sm:text-sm leading-snug line-clamp-2">${safeName}</h4>
                     </div>
-                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-50 mt-1">
+                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-50 mt-1 gap-1">
                         <span class="font-black text-[#1F7068] text-sm sm:text-base">¥${price.toLocaleString()}</span>
-                        ${linkButton}
+                        <div class="flex items-center gap-1 shrink-0">
+                            ${singleCartButton}
+                            ${linkButton}
+                        </div>
                     </div>
                 `;
                 itemList.appendChild(card);
@@ -695,6 +750,86 @@
 
             resultContainer.classList.remove('hidden');
             lucide.createIcons();
+        }
+
+        // ==========================================
+        // 笹部画材 カート投入機能（一括 ＆ 単品）
+        // ==========================================
+        function addAllToCart() {
+            if (!currentSelectedItems || currentSelectedItems.length === 0) {
+                alert('カートに入れる商品がありません。');
+                return;
+            }
+
+            const cartItems = [];
+            currentSelectedItems.forEach(item => {
+                if (!item.url) return;
+                const m = String(item.url).match(/id=(\d+)/);
+                if (m && m[1]) {
+                    cartItems.push(m[1]);
+                }
+            });
+
+            if (cartItems.length === 0) {
+                alert('カート投入可能な商品IDが見つかりませんでした。');
+                return;
+            }
+
+            // 動的Formを生成して笹部画材のcart_in.htmlへPOST送信（別タブ）
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://www.sasabegazai.co.jp/cart_in.html';
+            form.target = '_blank';
+            form.rel = 'noopener noreferrer';
+
+            cartItems.forEach(pid => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `id_${pid}`;
+                input.value = '1';
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            // 完了案内UIを表示
+            const noticeEl = document.getElementById('cartSuccessNotice');
+            const msgEl = document.getElementById('cartSuccessMsg');
+            if (noticeEl && msgEl) {
+                msgEl.textContent = `${cartItems.length}点の商品をカートへ投入しました！（別タブで開きました）`;
+                noticeEl.classList.remove('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        function addSingleToCart(productId) {
+            if (!productId) return;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://www.sasabegazai.co.jp/cart_in.html';
+            form.target = '_blank';
+            form.rel = 'noopener noreferrer';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `id_${productId}`;
+            input.value = '1';
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+
+            const noticeEl = document.getElementById('cartSuccessNotice');
+            const msgEl = document.getElementById('cartSuccessMsg');
+            if (noticeEl && msgEl) {
+                msgEl.textContent = `商品を笹部画材のカートへ投入しました！（別タブで開きました）`;
+                noticeEl.classList.remove('hidden');
+                lucide.createIcons();
+            }
         }
 
         // ==========================================
